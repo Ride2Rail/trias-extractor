@@ -3,14 +3,18 @@ import isodate
 
 class Request:
 
-    def __init__(self, id, start_time, end_time, start_lon, start_lat, end_lon, end_lat):
+    def __init__(self, id):
         self.id = id
+        self.offers = {}
+
+    def add_times(self, start_time, end_time):
         self.start_time = start_time
         self.end_time = end_time
+
+    def add_locations(self, start_lon, start_lat, end_lon, end_lat):
         # Serialize as geojson.Point((-155.52, 19.61))
         self.start_loc = (float(start_lon), float(start_lat))
         self.end_loc = (float(end_lon), float(end_lat))
-        self.offers = {}
 
     def add_offer(self, offer):
         self.offers[offer.id] = offer
@@ -33,7 +37,7 @@ class Offer:
         self.complete_total = complete_total # Pair (price, currency)
 
     def add_offer_item(self, offer_item):
-		self.offer_items.append(offer_item)
+        self.offer_items.append(offer_item)
 
     def to_redis(self, pipeline):
     	# TODO
@@ -49,9 +53,7 @@ class OfferItem:
         self.name = name
         self.fares_authority_ref = fares_authority_ref
         self.fares_authority_text = fares_authority_text
-        self.price = price
-        # TODO Add currency to constructor OR use pair as for Offer
-        self.currency = "EUR"
+        self.price = price # Pair (price, currency)
         self.legs = []
         self.context = {}
 
@@ -88,6 +90,10 @@ class TripLeg:
         self.leg_stops = leg_stops
         self.transportation_mode = transportation_mode
         self.travel_expert = travel_expert
+        self.oic = {}
+
+    def add_to_oic(self, key, value):
+        self.oic[key] = value
 
     def to_redis(self, pipeline):
     	# TODO

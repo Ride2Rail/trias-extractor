@@ -2,9 +2,11 @@ import sys
 import time
 import logging
 
+import oic
+import model
+
 from flask import current_app as app
 from lxml import etree
-from model import *
 
 # namespaces
 NS = {'coactive': 'http://shift2rail.org/project/coactive',
@@ -26,6 +28,7 @@ def extract_trias(offers):
     
     # TripRequest
     request_id = newtree.find('.//coactive:UserId', namespaces=NS).text
+    request = model.Request(request_id)
     # TODO Parse mobility request data when example available
 
     # TripResponseContext
@@ -33,8 +36,6 @@ def extract_trias(offers):
     locations = {}
     if trip_response_context != None:
         locations = parse_context(trip_response_context)
-    app.logger.info(str(len(locations.keys())) + ' StopPoint extracted')
-    # TODO Extract Addresses
 
     # TripResults
     try:
@@ -43,19 +44,17 @@ def extract_trias(offers):
         print('Error: Invalid TRIAS data, no TripResult found.', file=sys.stderr)
         raise Exception(ERRINVALIDDATA)
 
-    trips = {}
     offers = {}
 
     # Trip
     for trip_result in _trip_results:
-        trip = trip_result.find('.//ns3:Trip', namespaces=NS)
+        _trip = trip_result.find('.//ns3:Trip', namespaces=NS)
 
         # Trip data
-        t = extract_trip(trip)
-        trips[t.id] = t
+        trip = extract_trip(_trip)
 
-        # TripLeg
-        _legs = trip.findall('.//ns3:TripLeg', namespaces=NS)
+        # Trip Legs
+        _legs = _trip.findall('.//ns3:TripLeg', namespaces=NS)
         for leg in _legs:
             leg_id = leg.find('.//ns3:LegId', namespaces=NS).text
             l = None
@@ -65,76 +64,77 @@ def extract_trias(offers):
             elif leg.find('.//ns3:ContinuousLeg', namespaces=NS) != None:
                 l = extract_continuous_leg(leg_id, 
                     leg.find('.//ns3:ContinuousLeg', namespaces=NS), locations)
+            if l != None:
+                trip.add_leg(l)
             else:
                 app.logger.error("Unknown Leg found with LegId: " + leg_id)
-            if l != None:
-                t.add_leg(l)
 
-    # TODO Review Offer extraction
+        # Offer
+        _offer_items = trip_result.findall('.//ns3:Ticket', namespaces=NS)
+        for metaticket in _offer_items:
+            offer_item_id = metaticket.find('.//ns3:TicketId', namespaces=NS).text
+            if offer_item_id == "META":
+                # Build Offer
+                offer = extract_offer(metaticket, trip)
+                offers[offer.id] = offer
+                request.add_offer(offer)
+        for ticket in _offer_items:
+                # Build Offer Items
+                extract_offer_item(ticket, offers)
 
-    #     _offer_items = trip_result.findall('.//ns3:Ticket', namespaces=NS)
-    #     for ticket in _offer_items:
-    #         offer_item_id = ticket.find('.//ns3:TicketId', namespaces=NS).text
-    #         if offer_item_id == "META":
-    #             # Build Offer
-    #             o = extract_offer(ticket, t)
-    #             offers[o.id] = o
-    #     for ticket in _offer_items:
-    #             # Build Offer Items
-    #             extract_offer_item(ticket, offers)
-
-    # TODO Define serialization in Redis
-
-    # for o_k in offers.keys():
-    #     writer.write_to_cache(offers[o_k])
-
-    return request_id
+    return request
 
 def extract_offer_item(ticket, offers):
     offer_item_id = ticket.find('.//ns3:TicketId', namespaces=NS).text
     if offer_item_id != "META":
+        # Mandatory Fields
         name = ticket.find('.//ns3:TicketName', namespaces=NS).text
         auth_ref = ticket.find('.//ns3:FaresAuthorityRef', namespaces=NS).text
         auth_text = ticket.find('.//ns3:FaresAuthorityText', namespaces=NS).text
 
+        # Price and Currency
         _price = ticket.find('.//ns3:Price', namespaces=NS)
-        price = "0"
+        p = "0"
         if _price != None:
-            price = _price.text
-        o_i = OfferItem(offer_item_id, name, auth_ref, auth_text, price)
-
+            p = _price.text
         _currency = ticket.find('.//ns3:Currency', namespaces=NS)
+        c = ""
         if _currency != None:
-            o_i.currency = _currency.text
-        
-        offer_item = ticket.find(".//ns3:Extension[ @xsi:type = 'coactive:OfferItemTicketExtension' ]", namespaces=NS)
-        offer_id = offer_item.find('.//coactive:OfferId', namespaces=NS).text
+            c = _currency.text
+        o_i = model.OfferItem(offer_item_id, name, auth_ref, auth_text, (p, c))
+
+        # Extension
+        offer_item_ticket = ticket.find(".//ns3:Extension[ @xsi:type = 'coactive:OfferItemTicketExtension' ]", namespaces=NS)
+        offer_id = offer_item_ticket.find('.//coactive:OfferId', namespaces=NS).text
         o = offers[offer_id]
         if (o == None):
             print("No associated Offer found")
             return
         o.add_offer_item(o_i)
-        
-        leg_ids = offer_item.findall('.//coactive:TravelEpisodeId', namespaces=NS)
+
+        leg_ids = offer_item_ticket.findall('.//coactive:TravelEpisodeId', namespaces=NS)
         for id in leg_ids:
             o_i.legs.append(id.text)
 
+        # Offer Item Context
+        extract_from_oic(offer_item_ticket, o, o_i)
 
+# Returns an Offer parsing a META-Ticket
 def extract_offer(ticket, trip):
     offer = ticket.find(".//ns3:Extension[ @xsi:type = 'coactive:MetaTicketExtension' ]", namespaces=NS)
     offer_id = offer.find('coactive:OfferId', namespaces=NS).text
 
-    _bookable_total = offer.find('coactive:BookableTotal', namespaces=NS)
+    _bookable_total = offer.find('.//coactive:BookableTotal', namespaces=NS)
     bt_p = _bookable_total.find('ns3:Price', namespaces=NS).text
     bt_c = _bookable_total.find('ns3:Currency', namespaces=NS).text
     bookable_total = (bt_p, bt_c)
 
-    _complete_total = offer.find('coactive:CompleteTotal', namespaces=NS)
+    _complete_total = offer.find('.//coactive:CompleteTotal', namespaces=NS)
     ct_p = _complete_total.find('ns3:Price', namespaces=NS).text
     ct_c = _complete_total.find('ns3:Currency', namespaces=NS).text
     complete_total = (ct_p, ct_c)
 
-    return Offer(offer_id, trip, bookable_total, complete_total)
+    return model.Offer(offer_id, trip, bookable_total, complete_total)
 
 # Returns a dictionary of id:Location parsing a TripResponseContext node
 def parse_context(context):
@@ -150,7 +150,7 @@ def parse_context(context):
             loc_lon = pos.find('.//ns3:Longitude', namespaces=NS).text
             loc_lat = pos.find('.//ns3:Latitude', namespaces=NS).text
 
-            l = StopPoint(id, name, loc_lon, loc_lat, stop_name)
+            l = model.StopPoint(id, name, loc_lon, loc_lat, stop_name)
 
             _codes = location.findall('.//ns3:PrivateCode', namespaces=NS)
             for code in _codes:
@@ -168,12 +168,12 @@ def parse_context(context):
             loc_lon = pos.find('.//ns3:Longitude', namespaces=NS).text
             loc_lat = pos.find('.//ns3:Latitude', namespaces=NS).text
 
-            l = Location(id, name, loc_lon, loc_lat)
+            l = model.Location(id, name, loc_lon, loc_lat)
             locations[id] = l
     
     return locations
 
-# Returns mandatory data about a Trip
+# Parses mandatory data about a Trip
 def extract_trip(trip):
     trip_id = trip.find('ns3:TripId', namespaces=NS).text
     duration = trip.find('ns3:Duration', namespaces=NS).text
@@ -181,8 +181,9 @@ def extract_trip(trip):
     end_time = trip.find('ns3:EndTime', namespaces=NS).text
     num_interchanges = trip.find('ns3:Interchanges', namespaces=NS).text
 
-    return Trip(trip_id, duration, start_time, end_time, num_interchanges)
+    return model.Trip(trip_id, duration, start_time, end_time, num_interchanges)
 
+# Parses a TimedLeg
 def extract_timed_leg(leg_id, leg, spoints):
     start_time = leg.find('.//ns3:ServiceDeparture/ns3:TimetabledTime', namespaces=NS).text
     end_time = leg.find('.//ns3:ServiceArrival/ns3:TimetabledTime', namespaces=NS).text
@@ -205,7 +206,7 @@ def extract_timed_leg(leg_id, leg, spoints):
     line = leg.find('.//ns3:LineRef', namespaces=NS).text
     journey = leg.find('.//ns3:JourneyRef', namespaces=NS).text
     
-    return TimedLeg(leg_id, start_time, end_time, leg_track, leg_stops, 
+    return model.TimedLeg(leg_id, start_time, end_time, leg_track, leg_stops, 
         transportation_mode, travel_expert, line, journey)
 
 def extract_leg_track(leg):
@@ -219,6 +220,7 @@ def extract_leg_track(leg):
         return track
     return None
 
+# Parses a ContinuousLeg or a RideSharingLeg
 def extract_continuous_leg(leg_id, leg, locations):
     start_time = leg.find('.//ns3:TimeWindowStart', namespaces=NS).text
     end_time = leg.find('.//ns3:TimeWindowEnd', namespaces=NS).text
@@ -249,22 +251,27 @@ def extract_continuous_leg(leg_id, leg, locations):
         lat = pos.find('.//ns3:Latitude', namespaces=NS).text
         leg_stops.append((lon, lat))
 
-    app.logger.info("Number of stops: " + str(len(leg_stops)))
-
     travel_expert = leg.find('.//coactive:TravelExpertId', namespaces=NS).text
     transportation_mode = leg.find('.//ns3:IndividualMode', namespaces=NS).text
     if transportation_mode != "others-drive-car":
-        return ContinuousLeg(leg_id, start_time, end_time, leg_track, leg_stops, 
+        return model.ContinuousLeg(leg_id, start_time, end_time, leg_track, leg_stops, 
             transportation_mode, travel_expert, duration)
     else:
         # RideSharing Leg
         driver = leg.find('.//ns3:OperatorRef', namespaces=NS).text
         vehicle = leg.find('.//ns3:InfoUrl/ns3:Label/ns3:Text', namespaces=NS).text
-        passenger = None # TODO Extract it from the OfferItemContext
-        return RideSharingLeg(leg_id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert, 
+        passenger = None # TODO Extract passenger_info from the OfferItemContext
+        return model.RideSharingLeg(leg_id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert, 
             duration, driver, vehicle, passenger)
 
-def extract_from_oic(offer):
-    # TODO Parse defined keys for OfferItemContext
-    # TODO Parse composite keys referring to specific TripLeg
-    return ""
+# Extract optional data from the OfferItemContext
+def extract_from_oic(offer_item_ticket, offer, offer_item):
+    oic_nodes = offer_item_ticket.findall(".//coactive:OfferItemContext", namespaces=NS)
+    _oic = {}
+    for _oic_node in oic_nodes:
+        key = _oic_node.find("coactive:Code", namespaces=NS)
+        value = _oic_node.find("coactive:Value", namespaces=NS)
+        if key != None and value != None:
+            _oic[key.text] = value.text
+
+    oic.parse_oic(_oic, offer, offer_item)

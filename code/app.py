@@ -17,13 +17,14 @@ def extract():
     # TODO Add validation?
     # TODO Define more errors?
     # try:
-    request_id = extractor.extract_trias(offers)
-    # TODO writer.write to Redis
+    parsed_request = extractor.extract_trias(offers)
+    # TODO Implement writing procedure
+    writer.write_to_cache(cache, parsed_request)
     # except:
     #    abort(500, 'Parsing failed')
 
     response = app.response_class(
-        response='{ "request_id" : "' + request_id + '"}',
+        response='{{ "request_id" : "{}"}}'.format(parsed_request.id),
         status=200,
         mimetype='application/json'
     )
