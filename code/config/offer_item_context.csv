@@ -20,5 +20,6 @@ shared_with_other_passengers,0,1,int
 can_share_cost,0,1,int
 vehicle_age,0,25,int
 certified_driver,0,1,int
-driver_license_issue_date,,date
+driver_license_issue_date,,,date
 repeated_trip,0,1,int
+passenger_ref,,,string

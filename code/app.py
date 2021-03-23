@@ -1,6 +1,3 @@
-import sys
-import time
-
 from flask import Flask, request, abort
 import redis
 

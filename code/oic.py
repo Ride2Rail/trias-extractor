@@ -38,6 +38,8 @@ def parse_oic(parsed_oic, offer, offer_item):
                 elif value_type == "date":
                     if is_date(value):
                         add_to_offer(offer, key, leg_ids, value)
+                elif value_type == "string":
+                        add_to_offer(offer, key, leg_ids, value)
             except ValueError:
                 continue
 
@@ -46,7 +48,7 @@ def add_to_offer(offer, key, leg_ids, value):
     for leg_id in leg_ids:
         leg = legs[leg_id]
         leg.add_to_oic(key, value)
-        # app.logger.info("Add {} to {} with value {}".format(key, leg_id, value))
+        # app.logger.debug("Add {} to {} with value {}".format(key, leg_id, value))
 
 def is_date(string):
     try: 

@@ -1,6 +1,5 @@
 import sys
 import time
-import logging
 
 import oic
 import model
@@ -30,6 +29,11 @@ def extract_trias(offers):
     request_id = newtree.find('.//coactive:UserId', namespaces=NS).text
     request = model.Request(request_id)
     # TODO Parse mobility request data when example available
+    # TODO Remove Fabricated Data
+    start_time = "2021-02-08T10:37:00.000"
+    end_time = "2021-02-08T11:57:00.000"
+    request.add_times(start_time, end_time)
+    request.add_locations(-4.433363,36.717249,-4.428985,36.711811)
 
     # TripResponseContext
     trip_response_context = newtree.find('.//ns3:TripResponseContext', namespaces=NS)
@@ -238,7 +242,7 @@ def extract_continuous_leg(leg_id, leg, locations):
         pos = leg.find('.//ns3:LegStart/ns3:GeoPosition', namespaces=NS)
         lon = pos.find('.//ns3:Longitude', namespaces=NS).text
         lat = pos.find('.//ns3:Latitude', namespaces=NS).text
-        leg_stops.append((lon, lat))
+        leg_stops.append((float(lon), float(lat)))
         
     end = leg.find('.//ns3:LegEnd/ns3:StopPointRef', namespaces=NS)
     if end == None:
@@ -249,7 +253,7 @@ def extract_continuous_leg(leg_id, leg, locations):
         pos = leg.find('.//ns3:LegEnd/ns3:GeoPosition', namespaces=NS)
         lon = pos.find('.//ns3:Longitude', namespaces=NS).text
         lat = pos.find('.//ns3:Latitude', namespaces=NS).text
-        leg_stops.append((lon, lat))
+        leg_stops.append((float(lon), float(lat)))
 
     travel_expert = leg.find('.//coactive:TravelExpertId', namespaces=NS).text
     transportation_mode = leg.find('.//ns3:IndividualMode', namespaces=NS).text
@@ -260,9 +264,9 @@ def extract_continuous_leg(leg_id, leg, locations):
         # RideSharing Leg
         driver = leg.find('.//ns3:OperatorRef', namespaces=NS).text
         vehicle = leg.find('.//ns3:InfoUrl/ns3:Label/ns3:Text', namespaces=NS).text
-        passenger = None # TODO Extract passenger_info from the OfferItemContext
+        # passenger info extracted from OIC
         return model.RideSharingLeg(leg_id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert, 
-            duration, driver, vehicle, passenger)
+            duration, driver, vehicle)
 
 # Extract optional data from the OfferItemContext
 def extract_from_oic(offer_item_ticket, offer, offer_item):

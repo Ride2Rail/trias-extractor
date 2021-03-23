@@ -1,6 +1,8 @@
 import dateutil.parser
 import isodate
 
+import writer
+
 class Request:
 
     def __init__(self, id):
@@ -12,50 +14,23 @@ class Request:
         self.end_time = end_time
 
     def add_locations(self, start_lon, start_lat, end_lon, end_lat):
-        # Serialize as geojson.Point((-155.52, 19.61))
-        self.start_loc = (float(start_lon), float(start_lat))
-        self.end_loc = (float(end_lon), float(end_lat))
+        self.start_point = (float(start_lon), float(start_lat))
+        self.end_point = (float(end_lon), float(end_lat))
 
     def add_offer(self, offer):
         self.offers[offer.id] = offer
-
-    def to_redis(self, pipeline):
-    	# TODO
-        return
-
-    def to_string(self):
-        return " ".join([self.id, self.start_time, self.end_time,
-            self.start_loc, self.end_loc, str(len(self.offers))])
 
 class Offer:
 
     def __init__(self, id, trip, bookable_total, complete_total):
         self.id = id
         self.trip = trip
-        self.offer_items = []
-        self.bookable_total = bookable_total # Pair (price, currency)
-        self.complete_total = complete_total # Pair (price, currency)
+        self.offer_items = {}
+        self.bookable_total = parse_price(bookable_total)
+        self.complete_total = parse_price(complete_total)
 
     def add_offer_item(self, offer_item):
-        self.offer_items.append(offer_item)
-
-    def to_redis(self, pipeline):
-    	# TODO
-        return
-
-    def to_string(self):
-        return " ".join([self.id, str(len(self.offer_items)), self.trip.to_string()])
-
-class OfferItem:
-
-    def __init__(self, id, name, fares_authority_ref, fares_authority_text, price):
-        self.id = id
-        self.name = name
-        self.fares_authority_ref = fares_authority_ref
-        self.fares_authority_text = fares_authority_text
-        self.price = price # Pair (price, currency)
-        self.legs = []
-        self.context = {}
+        self.offer_items[offer_item.id] = offer_item
 
 class Trip:
 
@@ -70,13 +45,21 @@ class Trip:
     def add_leg(self, leg):
         self.legs[leg.id] = leg
 
-    def to_redis(self, pipeline):
-    	# TODO
-        return
+class OfferItem:
 
-    def to_string(self):
-        return " ".join([self.id, self.duration, self.start_time, self.end_time,
-                         self.num_interchanges, str(len(self.legs))])
+    def __init__(self, id, name, fares_authority_ref, fares_authority_text, price):
+        self.id = id
+        self.name = name
+        self.fares_authority_ref = fares_authority_ref
+        self.fares_authority_text = fares_authority_text
+        self.price = parse_price(price)
+        self.legs = []
+
+def parse_price(price):
+    d_price = {}
+    d_price["value"] = price[0]
+    d_price["currency"] = price[1]
+    return d_price
 
 class TripLeg:
 
@@ -84,9 +67,7 @@ class TripLeg:
         self.id = id
         self.start_time = start_time
         self.end_time = end_time
-        # Serialize as geojson.MultiPoint([(-155.52, 19.61), (-157.97, 21.46)])
         self.leg_track = leg_track
-        # Serialize as geojson.MultiPoint
         self.leg_stops = leg_stops
         self.transportation_mode = transportation_mode
         self.travel_expert = travel_expert
@@ -95,9 +76,8 @@ class TripLeg:
     def add_to_oic(self, key, value):
         self.oic[key] = value
 
-    def to_redis(self, pipeline):
-    	# TODO
-        return
+    def to_redis(self, pipeline, prefix):
+    	writer.trip_leg_to_cache(self, pipeline, prefix)
 
 class TimedLeg(TripLeg):
 
@@ -110,9 +90,8 @@ class TimedLeg(TripLeg):
         self.line = line
         self.journey = journey
 
-    def to_redis(self, pipeline):
-    	# TODO
-        return
+    def to_redis(self, pipeline, prefix):
+    	writer.timed_leg_to_cache(self, pipeline, prefix)
 
 class ContinuousLeg(TripLeg):
 
@@ -121,22 +100,18 @@ class ContinuousLeg(TripLeg):
         super().__init__(id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert)
         self.duration = duration
 
-    def to_redis(self, pipeline):
-    	# TODO
-        return
+    def to_redis(self, pipeline, prefix):
+    	writer.continuous_leg_to_cache(self, pipeline, prefix)
 
 class RideSharingLeg(ContinuousLeg):
-
     def __init__(self, id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert, 
-        duration, driver, vehicle, passenger):
+        duration, driver, vehicle):
         super().__init__(id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert, duration)
         self.driver = driver
         self.vehicle = vehicle
-        self.passenger = passenger
 
-    def to_redis(self, pipeline):
-    	# TODO
-        return
+    def to_redis(self, pipeline, prefix):
+    	writer.ridesharing_leg_to_cache(self, pipeline, prefix)
 
 class Location:
 
