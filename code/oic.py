@@ -1,8 +1,16 @@
+import os
 import csv
-# from flask import current_app as app
+import logging
+
 from dateutil.parser import parse
 
-OIC_CONFIG_PATH = "config/offer_item_context.csv"
+# logger
+logger = logging.getLogger(__name__)
+
+# OIC Config
+LOCAL_FOLDER = os.path.dirname(os.path.abspath(__file__))
+OIC_CONFIG_PATH = os.path.join(LOCAL_FOLDER, 'config', 'offer_item_context.csv')
+
 oic_config = {}
 
 with open(OIC_CONFIG_PATH) as fp:
@@ -48,7 +56,7 @@ def add_to_offer(offer, key, leg_ids, value):
     for leg_id in leg_ids:
         leg = legs[leg_id]
         leg.add_to_oic(key, value)
-        # app.logger.debug("Add {} to {} with value {}".format(key, leg_id, value))
+        logger.debug("Add {} to {} with value {}".format(key, leg_id, value))
 
 def is_date(string):
     try: 

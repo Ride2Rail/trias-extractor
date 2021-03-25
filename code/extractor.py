@@ -1,11 +1,14 @@
 import sys
 import time
+import logging
 
 import oic
 import model
 
-from flask import current_app as app
 from lxml import etree
+
+# logger
+logger = logging.getLogger(__name__)
 
 # namespaces
 NS = {'coactive': 'http://shift2rail.org/project/coactive',
@@ -71,7 +74,7 @@ def extract_trias(offers):
             if l != None:
                 trip.add_leg(l)
             else:
-                app.logger.error("Unknown Leg found with LegId: " + leg_id)
+                logger.error("Unknown Leg found with LegId: " + leg_id)
 
         # Offer
         _offer_items = trip_result.findall('.//ns3:Ticket', namespaces=NS)

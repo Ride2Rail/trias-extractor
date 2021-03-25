@@ -2,8 +2,6 @@ import time
 import redis
 import geojson
 
-from flask import current_app as app
-
 def write_to_cache(cache, request):
     retries = 5
     pipe = cache.pipeline()
