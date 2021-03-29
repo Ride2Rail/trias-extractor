@@ -94,27 +94,27 @@ def extract_trias(offers):
 
 # Add Offer Items to Offers parsing Ticket nodes from TRIAS
 def extract_offer_item(ticket, offers):
-    offer_item_id = ticket.find('.//ns3:TicketId', namespaces=NS).text
+    offer_item_id = ticket.find('ns3:TicketId', namespaces=NS).text
     if offer_item_id != "META":
         # Mandatory Fields
-        name = ticket.find('.//ns3:TicketName', namespaces=NS).text
-        auth_ref = ticket.find('.//ns3:FaresAuthorityRef', namespaces=NS).text
-        auth_text = ticket.find('.//ns3:FaresAuthorityText', namespaces=NS).text
+        name = ticket.find('ns3:TicketName', namespaces=NS).text
+        auth_ref = ticket.find('ns3:FaresAuthorityRef', namespaces=NS).text
+        auth_text = ticket.find('ns3:FaresAuthorityText', namespaces=NS).text
 
         # Price and Currency
-        _price = ticket.find('.//ns3:Price', namespaces=NS)
+        _price = ticket.find('ns3:Price', namespaces=NS)
         p = "0"
         if _price != None:
             p = _price.text
-        _currency = ticket.find('.//ns3:Currency', namespaces=NS)
+        _currency = ticket.find('ns3:Currency', namespaces=NS)
         c = ""
         if _currency != None:
             c = _currency.text
         o_i = model.OfferItem(offer_item_id, name, auth_ref, auth_text, (p, c))
 
         # Extension
-        offer_item_ticket = ticket.find(".//ns3:Extension[ @xsi:type = 'coactive:OfferItemTicketExtension' ]", namespaces=NS)
-        offer_id = offer_item_ticket.find('.//coactive:OfferId', namespaces=NS).text
+        offer_item_ticket = ticket.find("ns3:Extension[ @xsi:type = 'coactive:OfferItemTicketExtension' ]", namespaces=NS)
+        offer_id = offer_item_ticket.find('coactive:OfferId', namespaces=NS).text
         o = offers[offer_id]
         if (o == None):
             print("No associated Offer found")
@@ -130,15 +130,16 @@ def extract_offer_item(ticket, offers):
 
 # Returns an Offer parsing a META-Ticket
 def extract_offer(ticket, trip):
-    offer = ticket.find(".//ns3:Extension[ @xsi:type = 'coactive:MetaTicketExtension' ]", namespaces=NS)
+    offer = ticket.find("ns3:Extension[ @xsi:type = 'coactive:MetaTicketExtension' ]", namespaces=NS)
     offer_id = offer.find('coactive:OfferId', namespaces=NS).text
 
-    _bookable_total = offer.find('.//coactive:BookableTotal', namespaces=NS)
+    prices = offer.find('coactive:Prices', namespaces=NS)
+    _bookable_total = prices.find('coactive:BookableTotal', namespaces=NS)
     bt_p = _bookable_total.find('ns3:Price', namespaces=NS).text
     bt_c = _bookable_total.find('ns3:Currency', namespaces=NS).text
     bookable_total = (bt_p, bt_c)
 
-    _complete_total = offer.find('.//coactive:CompleteTotal', namespaces=NS)
+    _complete_total = prices.find('coactive:CompleteTotal', namespaces=NS)
     ct_p = _complete_total.find('ns3:Price', namespaces=NS).text
     ct_c = _complete_total.find('ns3:Currency', namespaces=NS).text
     complete_total = (ct_p, ct_c)
@@ -150,34 +151,32 @@ def parse_context(context):
     locations = {}
     _locations = context.findall('.//ns3:Location', namespaces=NS)
     for location in _locations:
+        name = None          
+        _name = location.find('ns3:LocationName/ns3:Text', namespaces=NS)
+        if _name != None:
+            name = _name.text
+        pos = location.find('ns3:GeoPosition', namespaces=NS)
+        loc_lon = pos.find('ns3:Longitude', namespaces=NS).text
+        loc_lat = pos.find('ns3:Latitude', namespaces=NS).text
+
         # StopPoint
-        if location.find('.//ns3:StopPoint', namespaces=NS) != None :
-            id = location.find('.//ns3:StopPointRef', namespaces=NS).text
-            name = location.find('.//ns3:LocationName/ns3:Text', namespaces=NS).text
-            stop_name = location.find('.//ns3:StopPointName/ns3:Text', namespaces=NS).text
-            pos = location.find('.//ns3:GeoPosition', namespaces=NS)
-            loc_lon = pos.find('.//ns3:Longitude', namespaces=NS).text
-            loc_lat = pos.find('.//ns3:Latitude', namespaces=NS).text
-
+        sp = location.find('ns3:StopPoint', namespaces=NS)
+        if sp != None:
+            id = sp.find('ns3:StopPointRef', namespaces=NS).text
+            stop_name = sp.find('ns3:StopPointName/ns3:Text', namespaces=NS).text
             l = model.StopPoint(id, name, loc_lon, loc_lat, stop_name)
-
-            _codes = location.findall('.//ns3:PrivateCode', namespaces=NS)
+            _codes = sp.findall('.//ns3:PrivateCode', namespaces=NS)
             for code in _codes:
-                system = code.find('.//ns3:System', namespaces=NS).text
-                value = code.find('.//ns3:Value', namespaces=NS).text
+                system = code.find('ns3:System', namespaces=NS).text
+                value = code.find('ns3:Value', namespaces=NS).text
                 l.add_code(system, value)
-
             locations[id] = l
-
         # Address
-        elif location.find('.//ns3:Address', namespaces=NS) != None :
-            id = location.find('.//ns3:AddressCode', namespaces=NS).text
-            name = location.find('.//ns3:AddressName/ns3:Text', namespaces=NS).text
-            pos = location.find('.//ns3:GeoPosition', namespaces=NS)
-            loc_lon = pos.find('.//ns3:Longitude', namespaces=NS).text
-            loc_lat = pos.find('.//ns3:Latitude', namespaces=NS).text
-
-            l = model.Location(id, name, loc_lon, loc_lat)
+        ad = location.find('ns3:Address', namespaces=NS)
+        if ad != None :           
+            id = ad.find('ns3:AddressCode', namespaces=NS).text
+            a_name = ad.find('ns3:AddressName/ns3:Text', namespaces=NS).text
+            l = model.Address(id, name, loc_lon, loc_lat, a_name)
             locations[id] = l
     
     return locations
@@ -194,33 +193,35 @@ def extract_trip(trip):
 
 # Parses a TimedLeg
 def extract_timed_leg(leg_id, leg, spoints):
-    start_time = leg.find('.//ns3:ServiceDeparture/ns3:TimetabledTime', namespaces=NS).text
-    end_time = leg.find('.//ns3:ServiceArrival/ns3:TimetabledTime', namespaces=NS).text
+    start_time = leg.find('ns3:LegBoard/ns3:ServiceDeparture/ns3:TimetabledTime', namespaces=NS).text
+    end_time = leg.find('ns3:LegAlight/ns3:ServiceArrival/ns3:TimetabledTime', namespaces=NS).text
 
     leg_track = extract_leg_track(leg)
 
     leg_stops = []
-    board = leg.find('.//ns3:LegBoard/ns3:StopPointRef', namespaces=NS).text
+    board = leg.find('ns3:LegBoard/ns3:StopPointRef', namespaces=NS).text
     leg_stops.append(spoints[board].pos)
     _intermediates = leg.findall('.//ns3:LegIntermediates', namespaces=NS)
     if _intermediates != None:
         for li in _intermediates:
             li_ref = li.find('ns3:StopPointRef', namespaces=NS).text
             leg_stops.append(spoints[li_ref].pos)
-    alight = leg.find('.//ns3:LegAlight/ns3:StopPointRef', namespaces=NS).text
+    alight = leg.find('ns3:LegAlight/ns3:StopPointRef', namespaces=NS).text
     leg_stops.append(spoints[alight].pos)
 
-    transportation_mode = leg.find('.//ns3:PtMode', namespaces=NS).text
+    service = leg.find('ns3:Service', namespaces=NS)
+    journey = service.find('ns3:JourneyRef', namespaces=NS).text
+    line = service.find('ns3:ServiceSection/ns3:LineRef', namespaces=NS).text
+    transportation_mode = service.find('ns3:ServiceSection/ns3:Mode/ns3:PtMode', namespaces=NS).text
+
     travel_expert = leg.find('.//coactive:TravelExpertId', namespaces=NS).text
-    line = leg.find('.//ns3:LineRef', namespaces=NS).text
-    journey = leg.find('.//ns3:JourneyRef', namespaces=NS).text
     
     return model.TimedLeg(leg_id, start_time, end_time, leg_track, leg_stops, 
         transportation_mode, travel_expert, line, journey)
 
 # Extracts the leg track (list of pairs of coordinates) from a Projection node
 def extract_leg_track(leg):
-    _track = leg.find('.//ns3:Projection', namespaces=NS)
+    _track = leg.find('ns3:LegTrack/ns3:TrackSection/ns3:Projection', namespaces=NS)
     if _track != None:
         track = []
         for pos in list(_track):
@@ -232,45 +233,46 @@ def extract_leg_track(leg):
 
 # Parses and returns a ContinuousLeg/RideSharingLeg
 def extract_continuous_leg(leg_id, leg, locations):
-    start_time = leg.find('.//ns3:TimeWindowStart', namespaces=NS).text
-    end_time = leg.find('.//ns3:TimeWindowEnd', namespaces=NS).text
-    duration = leg.find('.//ns3:Duration', namespaces=NS).text
+    start_time = leg.find('ns3:TimeWindowStart', namespaces=NS).text
+    end_time = leg.find('ns3:TimeWindowEnd', namespaces=NS).text
+    duration = leg.find('ns3:Duration', namespaces=NS).text
 
     leg_track = extract_leg_track(leg)
     
     leg_stops = []
-    start = leg.find('.//ns3:LegStart/ns3:StopPointRef', namespaces=NS)
+    start = leg.find('ns3:LegStart/ns3:StopPointRef', namespaces=NS)
     if start == None:
-        start = leg.find('.//ns3:LegStart/ns3:AddressRef', namespaces=NS)
+        start = leg.find('ns3:LegStart/ns3:AddressRef', namespaces=NS)
     if start != None:
         leg_stops.append(locations[start.text].pos)
     else:
-        pos = leg.find('.//ns3:LegStart/ns3:GeoPosition', namespaces=NS)
-        lon = pos.find('.//ns3:Longitude', namespaces=NS).text
-        lat = pos.find('.//ns3:Latitude', namespaces=NS).text
+        pos = leg.find('ns3:LegStart/ns3:GeoPosition', namespaces=NS)
+        lon = pos.find('ns3:Longitude', namespaces=NS).text
+        lat = pos.find('ns3:Latitude', namespaces=NS).text
         leg_stops.append((float(lon), float(lat)))
         
-    end = leg.find('.//ns3:LegEnd/ns3:StopPointRef', namespaces=NS)
+    end = leg.find('ns3:LegEnd/ns3:StopPointRef', namespaces=NS)
     if end == None:
-        end = leg.find('.//ns3:LegEnd/ns3:AddressRef', namespaces=NS)
+        end = leg.find('ns3:LegEnd/ns3:AddressRef', namespaces=NS)
     if end != None:
         leg_stops.append(locations[end.text].pos)
     else:
-        pos = leg.find('.//ns3:LegEnd/ns3:GeoPosition', namespaces=NS)
-        lon = pos.find('.//ns3:Longitude', namespaces=NS).text
-        lat = pos.find('.//ns3:Latitude', namespaces=NS).text
+        pos = leg.find('ns3:LegEnd/ns3:GeoPosition', namespaces=NS)
+        lon = pos.find('ns3:Longitude', namespaces=NS).text
+        lat = pos.find('ns3:Latitude', namespaces=NS).text
         leg_stops.append((float(lon), float(lat)))
 
     travel_expert = leg.find('.//coactive:TravelExpertId', namespaces=NS).text
-    transportation_mode = leg.find('.//ns3:IndividualMode', namespaces=NS).text
+    transportation_mode = leg.find('ns3:Service/ns3:IndividualMode', namespaces=NS).text
     if transportation_mode != "others-drive-car":
         return model.ContinuousLeg(leg_id, start_time, end_time, leg_track, leg_stops, 
             transportation_mode, travel_expert, duration)
     else:
         # RideSharing Leg
-        driver = leg.find('.//ns3:OperatorRef', namespaces=NS).text
-        vehicle = leg.find('.//ns3:InfoUrl/ns3:Label/ns3:Text', namespaces=NS).text
-        # passenger info extracted from OIC
+        sh_service = leg.find('ns3:Service/ns3:SharingService', namespaces=NS)
+        driver = sh_service.find('ns3:OperatorRef', namespaces=NS).text
+        vehicle = sh_service.find('ns3:InfoUrl/ns3:Label/ns3:Text', namespaces=NS).text
+        # passenger info are extracted from OIC
         return model.RideSharingLeg(leg_id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert, 
             duration, driver, vehicle)
 

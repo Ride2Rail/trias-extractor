@@ -126,6 +126,12 @@ class StopPoint(Location):
     def add_code(self, system, value):
         self.codes[system] = value
 
+class Address(Location):
+
+    def __init__(self, id, name, loc_lon, loc_lat, address_name):
+        super().__init__(id, name, loc_lon, loc_lat)
+        self.address_name = address_name
+
 # Utility functions
 
 def parse_price(price):
