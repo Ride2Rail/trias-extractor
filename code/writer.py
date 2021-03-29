@@ -1,6 +1,10 @@
 import time
 import redis
 import geojson
+import logging
+
+# logger
+logger = logging.getLogger(__name__)
 
 # Builds and executes a pipeline to serialize a model.Request to the Offer Cache
 def write_to_cache(cache, request):
@@ -11,12 +15,14 @@ def write_to_cache(cache, request):
         try:
             return pipe.execute()
         except redis.exceptions.ConnectionError as exc:
+            logging.debug("Attempt failed. Retries remaining: {}".format(retries))
             if retries == 0:
                 raise exc
             retries -= 1
             time.sleep(0.5)
 
 # Adds to the pipeline (pipe) the commands to serialize a model.Request
+def request_to_cache(r, pipe):
     prefix = r.id
     if r.start_time != None:
     	    pipe.set("{}:start_time".format(prefix), r.start_time)

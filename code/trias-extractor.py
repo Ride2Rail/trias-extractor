@@ -42,17 +42,18 @@ def extract():
     offers = request.data
     
     # TODO Add validation?/Define more errors?
-    try:
-        parsed_request = extractor.extract_trias(offers)
-        logger.info("Offers parsed from TRIAS [request_id:{}]".format(parsed_request.id))
+    # try:
+    parsed_request = extractor.extract_trias(offers)
+    logger.info("Offers parsed from TRIAS [request_id:{}]".format(parsed_request.id))
 
-        writer.write_to_cache(cache, parsed_request)
-        logger.info("Offers inserted in the Cache [request_id:{}]".format(parsed_request.id))
-    except:
-        abort(500, 'Parsing failed')
+    cache_reply = writer.write_to_cache(cache, parsed_request)
+    logger.debug("Cache write execution: {}".format(cache_reply))
+    logger.info("Offers inserted in the Cache [request_id:{}]".format(parsed_request.id))
+    # except:
+    # abort(500, 'Parsing failed')
 
     response = app.response_class(
-        response='{{ "request_id" : "{}"}}'.format(parsed_request.id),
+        response='{{ "request_id" : "{}" }}'.format(parsed_request.id),
         status=200,
         mimetype='application/json'
     )
