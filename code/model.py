@@ -3,6 +3,8 @@ import isodate
 
 import writer
 
+# Classes of the model parsed from TRIAS
+
 class Request:
 
     def __init__(self, id):
@@ -54,12 +56,6 @@ class OfferItem:
         self.fares_authority_text = fares_authority_text
         self.price = parse_price(price)
         self.legs = []
-
-def parse_price(price):
-    d_price = {}
-    d_price["value"] = price[0]
-    d_price["currency"] = price[1]
-    return d_price
 
 class TripLeg:
 
@@ -129,3 +125,11 @@ class StopPoint(Location):
 
     def add_code(self, system, value):
         self.codes[system] = value
+
+# Utility functions
+
+def parse_price(price):
+    d_price = {}
+    d_price["value"] = price[0]
+    d_price["currency"] = price[1]
+    return d_price

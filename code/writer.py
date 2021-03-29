@@ -2,6 +2,7 @@ import time
 import redis
 import geojson
 
+# Builds and executes a pipeline to serialize a model.Request to the Offer Cache
 def write_to_cache(cache, request):
     retries = 5
     pipe = cache.pipeline()
@@ -15,7 +16,7 @@ def write_to_cache(cache, request):
             retries -= 1
             time.sleep(0.5)
 
-def request_to_cache(r, pipe):
+# Adds to the pipeline (pipe) the commands to serialize a model.Request
     prefix = r.id
     if r.start_time != None:
     	    pipe.set("{}:start_time".format(prefix), r.start_time)
@@ -32,6 +33,7 @@ def request_to_cache(r, pipe):
     for key in r.offers.keys():
         offer_to_cache(r.offers[key], pipe, prefix)
 
+# Adds to the pipeline (pipe) the commands to serialize a model.Offer
 def offer_to_cache(o, pipe, prefix):
     prefix = "{}:{}".format(prefix, o.id)
 
@@ -60,6 +62,7 @@ def offer_to_cache(o, pipe, prefix):
     for key in o.offer_items.keys():
         offer_item_to_cache(o.offer_items[key], pipe, prefix)
 
+# Adds to the pipeline (pipe) the commands to serialize a model.OfferItem
 def offer_item_to_cache(o_i, pipe, prefix):
     prefix = "{}:{}".format(prefix, o_i.id)
     if o_i.price != None:
@@ -73,6 +76,7 @@ def offer_item_to_cache(o_i, pipe, prefix):
     # Legs
     pipe.lpush("{}:legs".format(prefix),*(o_i.legs))
 
+# Adds to the pipeline (pipe) the commands to serialize a model.TripLeg
 def trip_leg_to_cache(tl, pipe, prefix):
     prefix = "{}:{}".format(prefix, tl.id)
     if tl.start_time != None:
@@ -94,6 +98,7 @@ def trip_leg_to_cache(tl, pipe, prefix):
     for key in tl.oic.keys():
         pipe.set("{}:{}".format(prefix, key), tl.oic[key])
 
+# Adds to the pipeline (pipe) the commands to serialize a model.TimedLeg
 def timed_leg_to_cache(tl, pipe, prefix):
     trip_leg_to_cache(tl, pipe, prefix)
     prefix = "{}:{}".format(prefix, tl.id)
@@ -103,11 +108,13 @@ def timed_leg_to_cache(tl, pipe, prefix):
     if tl.journey != None:
         pipe.set("{}:journey".format(prefix), tl.journey)
 
+# Adds to the pipeline (pipe) the commands to serialize a model.ContinuousLeg
 def continuous_leg_to_cache(tl, pipe, prefix):
     trip_leg_to_cache(tl, pipe, prefix)
     prefix = "{}:{}".format(prefix, tl.id)
     pipe.set("{}:leg_type".format(prefix), "continuous")
 
+# Adds to the pipeline (pipe) the commands to serialize a model.RideSharingLeg
 def ridesharing_leg_to_cache(tl, pipe, prefix):
     trip_leg_to_cache(tl, pipe, prefix)
     prefix = "{}:{}".format(prefix, tl.id)

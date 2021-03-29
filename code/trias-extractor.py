@@ -1,8 +1,8 @@
 import os
 import sys
 import pathlib
+import time
 import logging
-import configparser as cp
 
 from flask import Flask, request, abort
 import redis
@@ -10,7 +10,7 @@ import redis
 import extractor, writer
 
 app = Flask(__name__)
-cache = redis.Redis(host='redis', port=6379)
+cache = redis.Redis(host='cache', port=6379)
 
 ##### Logging
 # create logger
@@ -28,21 +28,28 @@ root.setLevel(os.environ.get("LOGLEVEL", "INFO"))
 root.addHandler(handler)
 #####
 
+@app.route('/check', methods = ['GET'])
+def check():
+    try:
+        cache.info()
+        return "Cache up"
+    except:
+        abort(500, 'Cache not reachable')
+
 @app.route('/extract', methods = ['POST'])
 def extract():
     request.get_data()
     offers = request.data
     
-    # TODO Add validation?
-    # TODO Define more errors?
-    # try:
-    parsed_request = extractor.extract_trias(offers)
-    logger.info("Offers parsed from TRIAS [request_id:{}]".format(parsed_request.id))
+    # TODO Add validation?/Define more errors?
+    try:
+        parsed_request = extractor.extract_trias(offers)
+        logger.info("Offers parsed from TRIAS [request_id:{}]".format(parsed_request.id))
 
-    writer.write_to_cache(cache, parsed_request)
-    logger.info("Offers inserted in the Cache [request_id:{}]".format(parsed_request.id))
-    # except:
-    #    abort(500, 'Parsing failed')
+        writer.write_to_cache(cache, parsed_request)
+        logger.info("Offers inserted in the Cache [request_id:{}]".format(parsed_request.id))
+    except:
+        abort(500, 'Parsing failed')
 
     response = app.response_class(
         response='{{ "request_id" : "{}"}}'.format(parsed_request.id),
@@ -55,8 +62,8 @@ def extract():
 if __name__ == '__main__':
 
     # remove default logger
-    while logger.hasHandlers():
-        logger.removeHandler(logger.handlers[0])
+    while root.hasHandlers():
+        root.removeHandler(root.handlers[0])
 
     # create file handler which logs INFO messages
     fh = logging.FileHandler("{}.log".format(__name__), mode='a+')

@@ -8,7 +8,7 @@ services:
       - ./code:/code
     environment:
       FLASK_ENV: development
-  redis:
+  cache:
     image: "redis:alpine"
     volumes:
       - ./redis-data:/data

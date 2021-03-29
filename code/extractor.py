@@ -19,6 +19,7 @@ NS = {'coactive': 'http://shift2rail.org/project/coactive',
 ERREMPTYTREE = 1
 ERRINVALIDDATA = 2
 
+# Main parsing procedure
 def extract_trias(offers):
     parser = etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
 
@@ -81,16 +82,17 @@ def extract_trias(offers):
         for metaticket in _offer_items:
             offer_item_id = metaticket.find('.//ns3:TicketId', namespaces=NS).text
             if offer_item_id == "META":
-                # Build Offer
+                # Parse Offer
                 offer = extract_offer(metaticket, trip)
                 offers[offer.id] = offer
                 request.add_offer(offer)
         for ticket in _offer_items:
-                # Build Offer Items
+                # Parse Offer Items
                 extract_offer_item(ticket, offers)
 
     return request
 
+# Add Offer Items to Offers parsing Ticket nodes from TRIAS
 def extract_offer_item(ticket, offers):
     offer_item_id = ticket.find('.//ns3:TicketId', namespaces=NS).text
     if offer_item_id != "META":
@@ -123,7 +125,7 @@ def extract_offer_item(ticket, offers):
         for id in leg_ids:
             o_i.legs.append(id.text)
 
-        # Offer Item Context
+        # Parse Offer Item Context
         extract_from_oic(offer_item_ticket, o, o_i)
 
 # Returns an Offer parsing a META-Ticket
@@ -216,6 +218,7 @@ def extract_timed_leg(leg_id, leg, spoints):
     return model.TimedLeg(leg_id, start_time, end_time, leg_track, leg_stops, 
         transportation_mode, travel_expert, line, journey)
 
+# Extracts the leg track (list of pairs of coordinates) from a Projection node
 def extract_leg_track(leg):
     _track = leg.find('.//ns3:Projection', namespaces=NS)
     if _track != None:
@@ -227,7 +230,7 @@ def extract_leg_track(leg):
         return track
     return None
 
-# Parses a ContinuousLeg or a RideSharingLeg
+# Parses and returns a ContinuousLeg/RideSharingLeg
 def extract_continuous_leg(leg_id, leg, locations):
     start_time = leg.find('.//ns3:TimeWindowStart', namespaces=NS).text
     end_time = leg.find('.//ns3:TimeWindowEnd', namespaces=NS).text
