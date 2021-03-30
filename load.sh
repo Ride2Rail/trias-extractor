@@ -20,7 +20,7 @@ done
 
 # Ensure the entire cache is dumped in the .rdb file 
 sleep 5
-docker exec -i trias-extractor_cache_1 redis-cli SAVE
+docker exec -i cache redis-cli SAVE
 
 # Stop Cache and Trias-Extractor service
 docker-compose down
