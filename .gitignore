@@ -1,7 +1,7 @@
 .idea
 **/__pycache__
-trias
 *.aof
 *.rdb
 *.log
 *-log.txt
+trias/*.xml
