@@ -1,4 +1,5 @@
 flask
+gunicorn
 python-dateutil
 isodate
 redis
