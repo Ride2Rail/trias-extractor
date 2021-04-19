@@ -80,7 +80,7 @@ def offer_item_to_cache(o_i, pipe, prefix):
     if o_i.fares_authority_text  != None:
         pipe.set("{}:fares_authority_text".format(prefix), o_i.fares_authority_text)
     # Legs
-    pipe.lpush("{}:legs".format(prefix),*(o_i.legs))
+    pipe.lpush("{}:legs".format(prefix),*(o_i.leg_ids))
 
 # Adds to the pipeline (pipe) the commands to serialize a model.TripLeg
 def trip_leg_to_cache(tl, pipe, prefix):

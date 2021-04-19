@@ -1,33 +1,29 @@
 import os
-import sys
-import pathlib
-import time
+import configparser as cp
 import logging
 
 from flask import Flask, request, abort
 import redis
 
-import extractor, writer
+import extractor, writer, setup
 
-app = Flask(__name__)
-cache = redis.Redis(host='cache', port=6379)
+service_name = os.path.splitext(os.path.basename(__file__))[0]
+app = Flask(service_name)
 
-##### Logging
-# create logger
-logger = logging.getLogger(__name__)
+# init config
+local_folder = os.path.dirname(os.path.abspath(__file__))
+config_path = os.path.join(local_folder, 'config', '{}.conf'.format(service_name))
+config = cp.ConfigParser()
+config.read(config_path)
 
-# create formatter
-formatter_fh = logging.Formatter('[%(asctime)s][%(levelname)s]: %(message)s')
-formatter_ch = logging.Formatter('[%(asctime)s][%(levelname)s](%(name)s): %(message)s')
+# init cache
+cache = redis.Redis(host=config.get('cache', 'host'),
+                    port=config.get('cache', 'port'))
 
-# create handler
-handler = logging.StreamHandler()
-handler.setFormatter(formatter_ch)
-root = logging.getLogger()
-root.setLevel(os.environ.get("LOGLEVEL", "INFO"))
-root.addHandler(handler)
-#####
+# init logging
+logger, ch = setup.setup_logger(service_name)
 
+# Expose an health check endpoint for the cache
 @app.route('/check', methods = ['GET'])
 def check():
     try:
@@ -36,21 +32,24 @@ def check():
     except:
         abort(500, 'Cache not reachable')
 
+# Main endpoint parsing a TRIAS file and adding the related offers to the cache.
+# Expects a TRIAS file as body of the POST request. 
+# Returns the request_id associated to the offers parsed.
 @app.route('/extract', methods = ['POST'])
 def extract():
     request.get_data()
     offers = request.data
     
-    # TODO Add validation?/Define more errors?
-    # try:
-    parsed_request = extractor.extract_trias(offers)
-    logger.info("Offers parsed from TRIAS [request_id:{}]".format(parsed_request.id))
+    # TODO Add additional validation/Define error codes
+    try:
+        parsed_request = extractor.extract_trias(offers)
+        logger.info("Offers parsed from Trias [request_id:{}]".format(parsed_request.id))
 
-    cache_reply = writer.write_to_cache(cache, parsed_request)
-    logger.debug("Cache write execution: {}".format(cache_reply))
-    logger.info("Offers inserted in the Cache [request_id:{}]".format(parsed_request.id))
-    # except:
-    # abort(500, 'Parsing failed')
+        cache_reply = writer.write_to_cache(cache, parsed_request)
+        logger.debug("Cache write execution: {}".format(cache_reply))
+        logger.info("Offers inserted in the Cache [request_id:{}]".format(parsed_request.id))
+    except Exception as e:
+        abort(500, 'Parsing failed. Exception: {}'.format(e))
 
     response = app.response_class(
         response='{{ "request_id" : "{}" }}'.format(parsed_request.id),
@@ -61,36 +60,16 @@ def extract():
     return response
 
 if __name__ == '__main__':
-
-    # remove default logger
-    while root.hasHandlers():
-        root.removeHandler(root.handlers[0])
-
-    # create file handler which logs INFO messages
-    fh = logging.FileHandler("{}.log".format(__name__), mode='a+')
-    fh.setLevel(logging.INFO)
-
-    # create console handler and set level to DEBUG
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
-
-    # add formatter to ch
-    ch.setFormatter(formatter_ch)
-    fh.setFormatter(formatter_fh)
-
-    # add ch to logger
-    logger.addHandler(fh)
-    logger.addHandler(ch)
+    import os
 
     FLASK_PORT = 5000
-
-    REDIS_HOST = 'localhost'
+    REDIS_HOST = "localhost"
     REDIS_PORT = 6379
+    cache = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
+
+    logger.setLevel(logging.DEBUG)
 
     os.environ["FLASK_ENV"] = "development"
-
-    cache = redis.Redis(host=REDIS_HOST, port=REDIS_PORT)
-
-    app.run(port=FLASK_PORT, debug=True)
+    app.run(port=FLASK_PORT, debug=True, use_reloader=False)
 
     exit(0)

@@ -121,9 +121,9 @@ def extract_offer_item(ticket, offers):
             return
         o.add_offer_item(o_i)
 
-        leg_ids = offer_item_ticket.findall('.//coactive:TravelEpisodeId', namespaces=NS)
-        for id in leg_ids:
-            o_i.legs.append(id.text)
+        _leg_ids = offer_item_ticket.findall('.//coactive:TravelEpisodeId', namespaces=NS)
+        for id in _leg_ids:
+            o_i.leg_ids.append(id.text)
 
         # Parse Offer Item Context
         extract_from_oic(offer_item_ticket, o, o_i)

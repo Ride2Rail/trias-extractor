@@ -55,7 +55,7 @@ class OfferItem:
         self.fares_authority_ref = fares_authority_ref
         self.fares_authority_text = fares_authority_text
         self.price = parse_price(price)
-        self.legs = []
+        self.leg_ids = []
 
 class TripLeg:
 

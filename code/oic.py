@@ -36,7 +36,7 @@ def parse_oic(parsed_oic, offer, offer_item):
             # If composite key, assumption is key:leg_id and 
             #   the value is associated to the leg with leg_id
             # Else the value is associated to all the legs associated to the offer item
-            leg_ids = offer_item.legs if key == p_key else [p_key.replace(key + ":", "")]
+            leg_ids = offer_item.leg_ids if key == p_key else [p_key.replace(key + ":", "")]
             
             key = key.lower()
             config = oic_config[key]
