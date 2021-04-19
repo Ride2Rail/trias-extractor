@@ -1,8 +1,10 @@
 # Offer parser `trias-extractor`
 
-***Version:*** 1.0
-***Date:*** 13.04.2021
-***Authors:*** Mario Scrocca (mario.scrocca@cefriel.com)
+**Version:** 1.0 
+
+**Date:** 13.04.2021
+
+**Authors:** Mario Scrocca (mario.scrocca@cefriel.com)
 
 ## Description 
 
@@ -33,11 +35,11 @@ The parsing procedure is implemented through the following steps:
 1.  Parse the `TripRequest` data associated with the offers described in the Trias `TripResponse` obtaining a `model.Request` object
 2.  Parse the `TripResponseContext` associated with the offers described in the Trias `TripResponse` obtaining a list of `model.Location` objects
 3.  Parse all the Trias `Trip`s and the associated `TripLeg`s obtaining a set of `model.Trip` objects referencing an ordered list of `model.TripLeg`s
-4.  Parse the Trias Meta-`Ticket ` associated with the different Trias `Trip`s obtaining a list of `model.Offer` objects referencing the associated `model.Trip` and bound to the `model.Request` object
-5.  Parse the Trias `Ticket`  associated with each Meta-`Ticket ` obtaining a list of `model.OfferItem` associated with a `model.Offer` and with the `model.TripLeg`s covered by the offer item.
+4.  Parse the Trias Meta-`Ticket` associated with the different Trias `Trip`s obtaining a list of `model.Offer` objects referencing the associated `model.Trip` and bound to the `model.Request` object
+5.  Parse the Trias `Ticket` associated with each Meta-`Ticket` obtaining a list of `model.OfferItem` associated with a `model.Offer` and with the `model.TripLeg`s covered by the offer item.
 6.  Parse the `OfferItemContext` for each Trias `Ticket` obtaining a dictionary of key-value pairs bound to specific `model.TripLeg`s associated to the `model.OfferItem`
 
-**Note on step 6**: If the `OfferItemContext` contains a composite key, the assumption is that it is composed as `oic_key:leg_id` and the parsed value should be associated only with the `model.TripLeg` having the provided `leg_id`. In all the other cases the value parsed is associated to all the `model.TripLeg` associated with the `model.OfferItem`.
+**Note on step 6**: If the `OfferItemContext` contains a composite key, the assumption is that it is composed as `oic_key:leg_id` and the parsed value should be associated only with the `model.TripLeg` having the provided `leg_id`. In all the other cases the value parsed is associated to all the `model.TripLeg`s associated with the `model.OfferItem`.
 
 ### Phase II: Writing 
 
