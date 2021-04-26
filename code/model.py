@@ -67,10 +67,10 @@ class TripLeg:
         self.leg_stops = leg_stops
         self.transportation_mode = transportation_mode
         self.travel_expert = travel_expert
-        self.oic = {}
+        self.attributes = {}
 
-    def add_to_oic(self, key, value):
-        self.oic[key] = value
+    def add_attribute(self, key, value):
+        self.attributes[key] = value
 
     def to_redis(self, pipeline, prefix):
     	writer.trip_leg_to_cache(self, pipeline, prefix)
