@@ -23,7 +23,7 @@ The defined model reflects the _offer cache_ schema:
 - **Offer**: id, trip, bookable_total, complete_total, ***offer_items***  (dictionary of associated *OfferItem* objects)
 - **Trip**: id, duration, start_time, end_time, num_interchanges, **legs** (dictionary of associated *TripLeg* objects)
 - **OfferItem**: id, name, fares_authority_ref, fares_authority_text, price, leg_ids (list of ids of *TripLeg* objects covered by the *OfferItem* object)
-- **TripLeg**: id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert, oic (dictionary of *OfferItemContext* key-value pairs)
+- **TripLeg**: id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert, attributes (dictionary of *OfferItemContext* key-value pairs)
     - **TimedLeg**(TripLeg): line, journey
     - **ContinuousLeg**(TripLeg): duration 
         - **RideSharingLeg**(ContinuousLeg): driver, vehicle
@@ -39,7 +39,7 @@ The parsing procedure is implemented through the following steps:
 5.  Parse the Trias `Ticket` associated with each Meta-`Ticket` obtaining a list of `model.OfferItem` associated with a `model.Offer` and with the `model.TripLeg`s covered by the offer item.
 6.  Parse the `OfferItemContext` for each Trias `Ticket` obtaining a dictionary of key-value pairs bound to specific `model.TripLeg`s associated to the `model.OfferItem`
 
-**Note on step 6**: If the `OfferItemContext` contains a composite key, the assumption is that it is composed as `oic_key:leg_id` and the parsed value should be associated only with the `model.TripLeg` having the provided `leg_id`. In all the other cases the value parsed is associated to all the `model.TripLeg`s associated with the `model.OfferItem`.
+**Note on step 6**: If the `OfferItemContext` contains a composite key, the assumption is that it is composed as `oic_key:leg_id` and the parsed value should be associated only with the `model.TripLeg` having the provided `leg_id`. In all the other cases the value parsed is associated to all the `model.TripLeg`s associated with the `model.OfferItem`. The information extracted from the `OfferItemContext` is merged with the `Attribute`s parsed for each `model.TripLeg`.
 
 ### Phase II: Writing 
 
@@ -57,7 +57,7 @@ Section ***cache***:
 - ***host*** - host address of the cache service that should be accessed 
 - ***port*** - port number of the cache service that should be accessed 
 
-The  ***config/offer_item_context.csv*** can be modified to configure the parsing procedure of the _offer item context_ associated with the different _Ticket_ nodes (offer items). The file defines the admissible keys (`key` column), the expected range of the values  (`value_min` and `value_max` columns for numeric datatypes) and the datatype (`type` column, admissible values are `string`, `int`, `float`, `date`) to execute a preliminary validation of the value parsed. 
+The  ***config/codes.csv*** can be modified to configure the parsing procedure of the `Attribute`s associated with the different _TripLeg_ nodes and the _offer item context_ associated with the different _Ticket_ nodes (offer items). The file defines the admissible keys (`key` column), the expected range of the values  (`value_min` and `value_max` columns for numeric datatypes) and the datatype (`type` column, admissible values are `string`, `int`, `float`, `date`) to execute a preliminary validation of the value parsed. 
 
 ## Usage
 
