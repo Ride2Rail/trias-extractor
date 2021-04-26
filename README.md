@@ -23,7 +23,7 @@ The defined model reflects the _offer cache_ schema:
 - **Offer**: id, trip, bookable_total, complete_total, ***offer_items***  (dictionary of associated *OfferItem* objects)
 - **Trip**: id, duration, start_time, end_time, num_interchanges, **legs** (dictionary of associated *TripLeg* objects)
 - **OfferItem**: id, name, fares_authority_ref, fares_authority_text, price, leg_ids (list of ids of *TripLeg* objects covered by the *OfferItem* object)
-- **TripLeg**: id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert, attributes (dictionary of *OfferItemContext* key-value pairs)
+- **TripLeg**: id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert, attributes (dictionary of key-value pairs)
     - **TimedLeg**(TripLeg): line, journey
     - **ContinuousLeg**(TripLeg): duration 
         - **RideSharingLeg**(ContinuousLeg): driver, vehicle
