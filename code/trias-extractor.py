@@ -21,7 +21,7 @@ cache = redis.Redis(host=config.get('cache', 'host'),
                     port=config.get('cache', 'port'))
 
 # init logging
-logger, ch = setup.setup_logger(service_name)
+logger, ch = setup.setup_logger()
 
 # Expose an health check endpoint for the cache
 @app.route('/check', methods = ['GET'])
@@ -46,7 +46,7 @@ def extract():
         logger.info("Offers parsed from Trias [request_id:{}]".format(parsed_request.id))
 
         cache_reply = writer.write_to_cache(cache, parsed_request)
-        logger.debug("Cache write execution: {}".format(cache_reply))
+        logger.debug("Cache write executed {} commands".format(len(cache_reply)))
         logger.info("Offers inserted in the Cache [request_id:{}]".format(parsed_request.id))
     except Exception as e:
         abort(500, 'Parsing failed. Exception: {}'.format(e))

@@ -2,13 +2,13 @@ import sys
 import time
 import logging
 
-import oic
+import codes
 import model
 
 from lxml import etree
 
 # logger
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 # namespaces
 NS = {'coactive': 'http://shift2rail.org/project/coactive',
@@ -64,14 +64,18 @@ def extract_trias(offers):
         # Trip Legs
         _legs = _trip.findall('.//ns3:TripLeg', namespaces=NS)
         for leg in _legs:
-            leg_id = leg.find('.//ns3:LegId', namespaces=NS).text
+            leg_id = leg.find('ns3:LegId', namespaces=NS).text
             l = None
-            if leg.find('.//ns3:TimedLeg', namespaces=NS) != None:
-                l = extract_timed_leg(leg_id, 
-                    leg.find('.//ns3:TimedLeg', namespaces=NS), locations)
-            elif leg.find('.//ns3:ContinuousLeg', namespaces=NS) != None:
-                l = extract_continuous_leg(leg_id, 
-                    leg.find('.//ns3:ContinuousLeg', namespaces=NS), locations)
+            _timed = leg.find('ns3:TimedLeg', namespaces=NS)
+            if _timed != None:
+                l = extract_timed_leg(leg_id, _timed, locations)
+                extract_leg_attributes(_timed, l)
+            else:
+                _continuous = leg.find('ns3:ContinuousLeg', namespaces=NS) 
+                if _continuous != None:
+                    l = extract_continuous_leg(leg_id, _continuous, locations)
+                    extract_leg_attributes(_continuous, l)
+
             if l != None:
                 trip.add_leg(l)
             else:
@@ -276,7 +280,19 @@ def extract_continuous_leg(leg_id, leg, locations):
         return model.RideSharingLeg(leg_id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert, 
             duration, driver, vehicle)
 
-# Extract optional data from the OfferItemContext
+# Extract additional data from the Leg Attributes
+def extract_leg_attributes(_leg, leg):
+    attributes = _leg.findall(".//ns3:Attribute", namespaces=NS)
+    _la = {}
+    for _attribute in attributes:
+        key = _attribute.find("ns3:Code", namespaces=NS)
+        value = _attribute.find("ns3:Text/ns3:Text", namespaces=NS)
+        if key != None and value != None:
+            _la[key.text] = value.text
+
+    codes.parse_attributes(_la, leg)
+
+# Extract additional data from the OfferItemContext
 def extract_from_oic(offer_item_ticket, offer, offer_item):
     oic_nodes = offer_item_ticket.findall(".//coactive:OfferItemContext", namespaces=NS)
     _oic = {}
@@ -286,4 +302,4 @@ def extract_from_oic(offer_item_ticket, offer, offer_item):
         if key != None and value != None:
             _oic[key.text] = value.text
 
-    oic.parse_oic(_oic, offer, offer_item)
+    codes.parse_oic(_oic, offer, offer_item)
