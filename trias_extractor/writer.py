@@ -57,8 +57,8 @@ def offer_to_cache(o, pipe, prefix):
     if t.num_interchanges != None:
         pipe.set("{}:num_interchanges".format(prefix), t.num_interchanges)
     # Legs
-    pipe.lpush("{}:legs".format(prefix),*(t.legs.keys()))
     for key in t.ordered_legs_ids:
+        pipe.lpush("{}:legs".format(prefix), key)
         t.legs[key].to_redis(pipe, prefix)
 
     # From Offer
