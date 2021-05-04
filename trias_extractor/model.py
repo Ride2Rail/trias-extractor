@@ -1,7 +1,7 @@
 import dateutil.parser
 import isodate
 
-import writer
+from trias_extractor import writer
 
 # Classes of the model parsed from TRIAS
 
@@ -42,10 +42,12 @@ class Trip:
         self.start_time = start_time
         self.end_time = end_time
         self.num_interchanges = num_interchanges
+        self.ordered_legs_ids = []
         self.legs = {}
 
     def add_leg(self, leg):
         self.legs[leg.id] = leg
+        self.ordered_legs_ids.append(leg.id)
 
 class OfferItem:
 

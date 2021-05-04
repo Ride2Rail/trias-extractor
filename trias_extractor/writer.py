@@ -58,7 +58,7 @@ def offer_to_cache(o, pipe, prefix):
         pipe.set("{}:num_interchanges".format(prefix), t.num_interchanges)
     # Legs
     pipe.lpush("{}:legs".format(prefix),*(t.legs.keys()))
-    for key in t.legs.keys():
+    for key in t.ordered_legs_ids:
         t.legs[key].to_redis(pipe, prefix)
 
     # From Offer
@@ -138,9 +138,9 @@ def ridesharing_leg_to_cache(tl, pipe, prefix):
     prefix = "{}:{}".format(prefix, tl.id)
     pipe.set("{}:leg_type".format(prefix), "ridesharing")
     if tl.driver != None:
-        pipe.set("{}:driver".format(prefix), tl.driver)
+        pipe.hmset("{}:driver".format(prefix), tl.driver)
     if tl.vehicle != None:
-        pipe.set("{}:vehicle".format(prefix), tl.vehicle)
+        pipe.hmset("{}:vehicle".format(prefix), tl.vehicle)
 
     logger.debug("Ridesharing Leg {} added to the pipeline".format(tl.id))
 

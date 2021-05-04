@@ -9,7 +9,7 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - ./code:/code
+      - ./trias_extractor:/trias_extractor
     # Comment environment section if in production
     environment:
       FLASK_ENV: development
@@ -19,7 +19,7 @@ services:
     container_name: cache
     image: "redis:alpine"
     volumes:
-      - ./redis-data:/data
+      - ./data:/data
     # ports:
     #  - "6379:6379"
     entrypoint: ["redis-server", "--appendonly", "yes"]

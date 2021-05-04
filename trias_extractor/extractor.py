@@ -2,8 +2,7 @@ import sys
 import time
 import logging
 
-import codes
-import model
+from trias_extractor import model, codes
 
 from lxml import etree
 
@@ -274,8 +273,12 @@ def extract_continuous_leg(leg_id, leg, locations):
     else:
         # RideSharing Leg
         sh_service = leg.find('ns3:Service/ns3:SharingService', namespaces=NS)
-        driver = sh_service.find('ns3:OperatorRef', namespaces=NS).text
-        vehicle = sh_service.find('ns3:InfoUrl/ns3:Label/ns3:Text', namespaces=NS).text
+        driver = {}
+        driver['id'] = sh_service.find('ns3:OperatorRef', namespaces=NS).text
+        driver['text'] = sh_service.find('ns3:Name', namespaces=NS).text
+        vehicle = {}
+        vehicle['id'] = sh_service.find('ns3:InfoUrl/ns3:Url', namespaces=NS).text
+        vehicle['text'] = sh_service.find('ns3:InfoUrl/ns3:Label/ns3:Text', namespaces=NS).text
         # passenger info are extracted from OIC
         return model.RideSharingLeg(leg_id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert, 
             duration, driver, vehicle)

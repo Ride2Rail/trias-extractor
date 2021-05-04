@@ -51,7 +51,7 @@ The `trias-extractor` component is implemented as a _Python_ application using t
 
 ## Configuration
 
-The following values of parameters can be defined in the configuration file ***config/trias-extractor.conf***.
+The following values of parameters can be defined in the configuration file ***config/trias_extractor.conf***.
 
 Section ***cache***: 
 - ***host*** - host address of the cache service that should be accessed 
@@ -61,15 +61,15 @@ The  ***config/codes.csv*** can be modified to configure the parsing procedure o
 
 ## Usage
 
-Adding Trias requests to a `trias` folder in the repository root, the `load.sh` script can be used to automatically launch the _trias-extractor_ service, the _offer cache_ and parse the files. The _offer cache_ data are persisted in the `./redis-data` folder.
+Adding Trias requests to a `trias` folder in the repository root, the `load.sh` script can be used to automatically launch the _trias-extractor_ service, the _offer cache_ and parse the files. The _offer cache_ data are persisted in the `./data` folder.
 
 ### Local development (debug on)
 
 Running it locally (assumption Redis is running at  `localhost:6379 `)
 
 ```bash
-$ python3 trias-extractor.py
- * Serving Flask app "trias-extractor" (lazy loading)
+$ python3 trias_extractor.py
+ * Serving Flask app "trias_extractor" (lazy loading)
  * Environment: development
  * Debug mode: on
  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)

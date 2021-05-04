@@ -5,7 +5,9 @@ import logging
 from flask import Flask, request, abort
 import redis
 
-import extractor, writer, setup
+from trias_extractor import extractor, writer
+from trias_extractor.setup import setup_logger
+# from r2r_offer_utils.logging import setup_logger
 
 service_name = os.path.splitext(os.path.basename(__file__))[0]
 app = Flask(service_name)
@@ -21,7 +23,7 @@ cache = redis.Redis(host=config.get('cache', 'host'),
                     port=config.get('cache', 'port'))
 
 # init logging
-logger, ch = setup.setup_logger()
+logger, ch = setup_logger()
 
 # Expose an health check endpoint for the cache
 @app.route('/check', methods = ['GET'])

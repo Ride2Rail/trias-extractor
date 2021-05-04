@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import logging
 
 def setup_logger(name=None):
