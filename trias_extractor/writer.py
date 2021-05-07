@@ -100,7 +100,7 @@ def trip_leg_to_cache(tl, pipe, prefix):
     if tl.duration  != None:
         pipe.set("{}:duration".format(prefix), tl.duration)
     if tl.transportation_mode != None:
-        pipe.set("{}:transportation_mode ".format(prefix), tl.transportation_mode)
+        pipe.set("{}:transportation_mode".format(prefix), tl.transportation_mode)
     if tl.leg_stops != None:
         pipe.set("{}:leg_stops".format(prefix),
             geojson.dumps(geojson.LineString(tl.leg_stops)))

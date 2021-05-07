@@ -332,8 +332,8 @@
               <ns3:Extension xsi:type="coactive:OfferItemTicketExtension">
                 <coactive:OfferId>2a8e0e6c-285d-4c8c-b98f-rs1</coactive:OfferId>
                 <coactive:Validity>
-                  <coactive:TravelEpisodeId>timed-leg-2</coactive:TravelEpisodeId>
                   <coactive:TravelEpisodeId>continuous-leg-1</coactive:TravelEpisodeId>
+                  <coactive:TravelEpisodeId>timed-leg-2</coactive:TravelEpisodeId>
                   <coactive:TravelEpisodeId>continuous-leg-3</coactive:TravelEpisodeId>
                 </coactive:Validity>
                 <coactive:OfferItemType>itinerary</coactive:OfferItemType>
