@@ -6,15 +6,14 @@ from flask import Flask, request, abort
 import redis
 
 from trias_extractor import extractor, writer
-from trias_extractor.setup import setup_logger
-# from r2r_offer_utils.logging import setup_logger
+from r2r_offer_utils.logging import setup_logger
 
 service_name = os.path.splitext(os.path.basename(__file__))[0]
 app = Flask(service_name)
 
 # init config
 local_folder = os.path.dirname(os.path.abspath(__file__))
-config_path = os.path.join(local_folder, 'config', '{}.conf'.format(service_name))
+config_path = os.path.join(local_folder, '{}.conf'.format(service_name))
 config = cp.ConfigParser()
 config.read(config_path)
 
@@ -24,6 +23,7 @@ cache = redis.Redis(host=config.get('cache', 'host'),
 
 # init logging
 logger, ch = setup_logger()
+logger.setLevel(logging.INFO)
 
 # Expose an health check endpoint for the cache
 @app.route('/check', methods = ['GET'])

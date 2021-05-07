@@ -51,13 +51,13 @@ The `trias-extractor` component is implemented as a _Python_ application using t
 
 ## Configuration
 
-The following values of parameters can be defined in the configuration file ***config/trias_extractor.conf***.
+The following values of parameters can be defined in the configuration file ***trias_extractor_service.conf***.
 
 Section ***cache***: 
 - ***host*** - host address of the cache service that should be accessed 
 - ***port*** - port number of the cache service that should be accessed 
 
-The  ***config/codes.csv*** can be modified to configure the parsing procedure of the `Attribute`s associated with the different _TripLeg_ nodes and the _offer item context_ associated with the different _Ticket_ nodes (offer items). The file defines the admissible keys (`key` column), the expected range of the values  (`value_min` and `value_max` columns for numeric datatypes) and the datatype (`type` column, admissible values are `string`, `int`, `float`, `date`) to execute a preliminary validation of the value parsed. 
+The  ***trias_extractor/config/codes.csv*** can be modified to configure the parsing procedure of the `Attribute`s associated with the different _TripLeg_ nodes and the _offer item context_ associated with the different _Ticket_ nodes (offer items). The file defines the admissible keys (`key` column), the expected range of the values  (`value_min` and `value_max` columns for numeric datatypes) and the datatype (`type` column, admissible values are `string`, `int`, `float`, `date`) to execute a preliminary validation of the value parsed. 
 
 ## Usage
 
@@ -68,8 +68,8 @@ Adding Trias requests to a `trias` folder in the repository root, the `load.sh` 
 Running it locally (assumption Redis is running at  `localhost:6379 `)
 
 ```bash
-$ python3 trias_extractor.py
- * Serving Flask app "trias_extractor" (lazy loading)
+$ python3 trias_extractor_service.py
+ * Serving Flask app "trias_extractor_service" (lazy loading)
  * Environment: development
  * Debug mode: on
  * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)

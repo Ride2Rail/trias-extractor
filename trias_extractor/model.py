@@ -74,9 +74,6 @@ class TripLeg:
     def add_attribute(self, key, value):
         self.attributes[key] = value
 
-    def to_redis(self, pipeline, prefix):
-    	writer.trip_leg_to_cache(self, pipeline, prefix)
-
 class TimedLeg(TripLeg):
 
     def __init__(self, id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert, 

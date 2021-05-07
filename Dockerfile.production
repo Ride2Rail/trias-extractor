@@ -1,12 +1,16 @@
 FROM python:3.8
 
-WORKDIR /trias_extractor
+WORKDIR /code
 
 RUN pip3 install --no-cache-dir --upgrade pip
 
 COPY requirements.txt requirements.txt
 RUN pip3 install --no-cache-dir -r requirements.txt
 
+COPY trias_extractor /code/trias_extractor
+COPY trias_extractor_service.py trias_extractor_service.py
+COPY trias_extractor_service.conf trias_extractor_service.conf
+
 EXPOSE 5000
 
-ENTRYPOINT ["gunicorn","-w","2","--threads","2","-b","0.0.0.0:5000","trias_extractor:app"]
+ENTRYPOINT ["gunicorn","-w","2","--threads","2","-b","0.0.0.0:5000","trias_extractor_service:app"]
