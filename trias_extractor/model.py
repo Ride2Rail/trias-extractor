@@ -10,14 +10,10 @@ class Request:
     def __init__(self, id):
         self.id = id
         self.offers = {}
-
-    def add_times(self, start_time, end_time):
-        self.start_time = start_time
-        self.end_time = end_time
-
-    def add_locations(self, start_lon, start_lat, end_lon, end_lat):
-        self.start_point = (float(start_lon), float(start_lat))
-        self.end_point = (float(end_lon), float(end_lat))
+        self.start_time = None
+        self.end_time = None
+        self.start_point = None
+        self.end_point = None
 
     def add_offer(self, offer):
         self.offers[offer.id] = offer

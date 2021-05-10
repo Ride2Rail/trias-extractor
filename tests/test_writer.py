@@ -23,11 +23,10 @@ def pipe(parsed_request):
 
 def test_request(parsed_request, pipe):  
     prefix = 'test-user-ID'
-    # TODO
-    # pipe.set.assert_any_call('{}:start_time'.format(prefix), 'VALUE_HERE')
-    # pipe.set.assert_any_call('{}:end_time'.format(prefix), 'VALUE_HERE')
-    # pipe.set.assert_any_call('{}:start_point'.format(prefix), 'VALUE_HERE')
-    # pipe.set.assert_any_call('{}:end_point'.format(prefix), 'VALUE_HERE')
+    pipe.set.assert_any_call('{}:start_time'.format(prefix), '2020-11-10T07:00:00.000Z')
+    pipe.set.assert_any_call('{}:end_time'.format(prefix), '2020-11-10T08:00:00.000Z')
+    pipe.set.assert_any_call('{}:start_point'.format(prefix), geojson.dumps(geojson.Point((-3.671161, -3.663255))))
+    pipe.set.assert_any_call('{}:end_point'.format(prefix), geojson.dumps(geojson.Point((-3.792386, -3.677984))))
 
     pipe.lpush.assert_any_call('{}:offers'.format(prefix), '2a8e0e6c-285d-4c8c-b98f-rs1')
 
@@ -131,7 +130,7 @@ def test_trip_leg_4(parsed_request, pipe):
     pipe.set.assert_any_call('{}:leg_type'.format(prefix), 'ridesharing')
     pipe.set.assert_any_call('{}:start_time'.format(prefix), '2020-11-10T07:30:00.000Z')
     pipe.set.assert_any_call('{}:end_time'.format(prefix), '2020-11-10T07:51:00.000Z')
-    pipe.set.assert_any_call('{}:duration'.format(prefix), 'PT31M')
+    pipe.set.assert_any_call('{}:duration'.format(prefix), 'PT21M')
     pipe.set.assert_any_call('{}:transportation_mode'.format(prefix), 'others-drive-car')
     pipe.set.assert_any_call('{}:leg_stops'.format(prefix), geojson.dumps(geojson.LineString([(-3.677985906600952, 40.395389556884766),(-3.7923872470855713, 40.29673385620117)])))
     pipe.set.assert_any_call('{}:travel_expert'.format(prefix), 'r2r_cbtsp')

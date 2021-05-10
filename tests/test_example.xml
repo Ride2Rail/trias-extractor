@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes'?>
-<ns3:Trias xmlns:coactive="http://shift2rail.org/project/coactive" xmlns:ns2="http://www.siri.org.uk/siri" xmlns:ns3="http://www.vdv.de/trias" xmlns:ns5="http://www.ifopt.org.uk/acsb" xmlns:ns6="http://www.ifopt.org.uk/ifopt" xmlns:ns7="http://datex2.eu/schema/1_0/1_0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<ns3:Trias xmlns:s2r="http://shift2rail.org/project/" xmlns:coactive="http://shift2rail.org/project/coactive" xmlns:ns2="http://www.siri.org.uk/siri" xmlns:ns3="http://www.vdv.de/trias" xmlns:ns5="http://www.ifopt.org.uk/acsb" xmlns:ns6="http://www.ifopt.org.uk/ifopt" xmlns:ns7="http://datex2.eu/schema/1_0/1_0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ns3:ServiceDelivery>
     <ns2:ResponseTimestamp>2020-11-09T10:06:06.893Z</ns2:ResponseTimestamp>
     <ns2:ResponseMessageIdentifier>CW</ns2:ResponseMessageIdentifier>
@@ -13,6 +13,30 @@
       </coactive:User>
     </ns3:Extension>
     <ns3:DeliveryPayload>
+      <s2r:TripRequest>
+        <s2r:DepartureLocation>
+          <s2r:Id>departure_request_location</s2r:Id>
+          <s2r:Position>
+            <s2r:Longitude>-3.671161</s2r:Longitude>
+            <s2r:Latitude>-3.663255</s2r:Latitude>      
+          </s2r:Position>
+        </s2r:DepartureLocation>
+        <s2r:ArrivalLocation>
+          <s2r:Id>arrival_request_location</s2r:Id>
+          <s2r:Position>
+            <s2r:Longitude>-3.792386</s2r:Longitude>
+            <s2r:Latitude>-3.677984</s2r:Latitude>
+          </s2r:Position>
+        </s2r:ArrivalLocation>
+        <s2r:RequestedTravelTime>
+          <s2r:RequestMode>departure</s2r:RequestMode>
+          <s2r:RequestedTime>2020-11-10T07:00:00.000Z</s2r:RequestedTime>
+        </s2r:RequestedTravelTime>
+        <s2r:RequestedTravelTime>
+          <s2r:RequestMode>arrival</s2r:RequestMode>
+          <s2r:RequestedTime>2020-11-10T08:00:00.000Z</s2r:RequestedTime>
+        </s2r:RequestedTravelTime>
+      </s2r:TripRequest>
       <ns3:TripResponse>
         <ns3:TripResponseContext>
           <ns3:Locations>
@@ -293,7 +317,7 @@
                 </ns3:Service>
                 <ns3:TimeWindowStart>2020-11-10T07:30:00.000Z</ns3:TimeWindowStart>
                 <ns3:TimeWindowEnd>2020-11-10T07:51:00.000Z</ns3:TimeWindowEnd>
-                <ns3:Duration>PT31M</ns3:Duration>
+                <ns3:Duration>PT21M</ns3:Duration>
                 <ns3:Extension xsi:type="coactive:LegExtension">
                   <coactive:TravelExpertId>r2r_cbtsp</coactive:TravelExpertId>
                 </ns3:Extension>

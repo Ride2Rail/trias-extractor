@@ -16,11 +16,10 @@ def parsed_request():
 
 def test_request(parsed_request):  
     assert parsed_request.id == 'test-user-ID'
-    # TODO
-    # r.start_time
-    # r.end_time
-    # r.start_point
-    # r.end_point
+    assert parsed_request.start_time == '2020-11-10T07:00:00.000Z'
+    assert parsed_request.end_time == '2020-11-10T08:00:00.000Z'
+    assert parsed_request.start_point == (-3.671161, -3.663255)
+    assert parsed_request.end_point == (-3.792386, -3.677984)
 
     parsed_offers = parsed_request.offers
     assert len(parsed_offers) == 1
@@ -149,7 +148,7 @@ def test_trip_leg_4(parsed_request):
     assert tl.id == 'ridesharing-leg-4'
     assert tl.start_time == '2020-11-10T07:30:00.000Z'
     assert tl.end_time == '2020-11-10T07:51:00.000Z'
-    assert tl.duration == 'PT31M'
+    assert tl.duration == 'PT21M'
     assert tl.transportation_mode == 'others-drive-car'
     assert tl.leg_stops[0] == (-3.677985906600952, 40.395389556884766)
     assert tl.leg_stops[1] == (-3.7923872470855713, 40.29673385620117)

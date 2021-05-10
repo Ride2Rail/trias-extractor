@@ -12,7 +12,8 @@ logger = logging.getLogger()
 # namespaces
 NS = {'coactive': 'http://shift2rail.org/project/coactive',
       'ns3': 'http://www.vdv.de/trias',
-      'xsi': 'http://www.w3.org/2001/XMLSchema-instance'}
+      'xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+      's2r' : 'http://shift2rail.org/project/'}
 
 # errors
 ERREMPTYTREE = 1
@@ -29,14 +30,13 @@ def extract_trias(offers):
         raise Exception(ERREMPTYTREE)
     
     # TripRequest
+    # TODO Check whether request id should be generated or parsed
     request_id = newtree.find('.//coactive:UserId', namespaces=NS).text
     request = model.Request(request_id)
-    # TODO Parse mobility request data when example available
-    # TODO Remove Fabricated Data
-    start_time = "2021-02-08T10:37:00.000"
-    end_time = "2021-02-08T11:57:00.000"
-    request.add_times(start_time, end_time)
-    request.add_locations(-4.433363,36.717249,-4.428985,36.711811)
+    # TODO Check the namespace
+    _request = newtree.find('.//s2r:TripRequest', namespaces=NS)
+    if _request != None :
+        extract_request(_request, request)
 
     # TripResponseContext
     trip_response_context = newtree.find('.//ns3:TripResponseContext', namespaces=NS)
@@ -94,6 +94,29 @@ def extract_trias(offers):
                 extract_offer_item(ticket, offers)
 
     return request
+
+def extract_request(_request, request):
+    _r_times = _request.findall('.//s2r:RequestedTravelTime', namespaces=NS)
+    # TODO Is it possible to have both requested arrival and departure times?
+    if _r_times != None:
+        for r_time in _r_times:
+            mode = r_time.find('s2r:RequestMode', namespaces=NS).text
+            datetime = r_time.find('s2r:RequestedTime', namespaces=NS).text
+            if mode == "departure":
+                request.start_time = datetime
+            if mode == "arrival":
+                request.end_time = datetime
+
+    _r_d_location = _request.find('s2r:DepartureLocation/s2r:Position', namespaces=NS)
+    if _r_d_location != None:
+        r_d_lat = float(_r_d_location.find('s2r:Latitude', namespaces=NS).text)
+        r_d_long = float(_r_d_location.find('s2r:Longitude', namespaces=NS).text)
+        request.start_point = (r_d_long, r_d_lat)
+    _r_a_location = _request.find('s2r:ArrivalLocation/s2r:Position', namespaces=NS)
+    if _r_a_location != None:
+        r_a_lat = float(_r_a_location.find('s2r:Latitude', namespaces=NS).text)
+        r_a_long = float(_r_a_location.find('s2r:Longitude', namespaces=NS).text)
+        request.end_point = (r_a_long, r_a_lat)
 
 # Add Offer Items to Offers parsing Ticket nodes from TRIAS
 def extract_offer_item(ticket, offers):
