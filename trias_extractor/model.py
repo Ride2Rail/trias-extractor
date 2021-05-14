@@ -10,6 +10,8 @@ class Request:
     def __init__(self, id):
         self.id = id
         self.offers = {}
+        self.user_id = None
+        self.traveller_id = None
         self.start_time = None
         self.end_time = None
         self.start_point = None

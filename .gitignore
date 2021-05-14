@@ -5,6 +5,6 @@
 *.rdb
 *.log
 *-log.txt
-trias/*.xml
+trias/**/*.xml
 venv
 src

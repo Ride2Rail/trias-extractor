@@ -22,7 +22,8 @@ def pipe(parsed_request):
     return pipe
 
 def test_request(parsed_request, pipe):  
-    prefix = 'test-user-ID'
+    prefix = parsed_request.id
+    # TODO Add user_id and/or traveller_id?
     pipe.set.assert_any_call('{}:start_time'.format(prefix), '2020-11-10T07:00:00.000Z')
     pipe.set.assert_any_call('{}:end_time'.format(prefix), '2020-11-10T08:00:00.000Z')
     pipe.set.assert_any_call('{}:start_point'.format(prefix), geojson.dumps(geojson.Point((-3.671161, -3.663255))))
@@ -31,7 +32,7 @@ def test_request(parsed_request, pipe):
     pipe.lpush.assert_any_call('{}:offers'.format(prefix), '2a8e0e6c-285d-4c8c-b98f-rs1')
 
 def test_offer(parsed_request, pipe):    
-    prefix = "{}:{}".format('test-user-ID', '2a8e0e6c-285d-4c8c-b98f-rs1')
+    prefix = "{}:{}".format(parsed_request.id, '2a8e0e6c-285d-4c8c-b98f-rs1')
     o = parsed_request.offers['2a8e0e6c-285d-4c8c-b98f-rs1']
     pipe.hmset.assert_any_call('{}:bookable_total'.format(prefix), o.bookable_total)
     pipe.hmset.assert_any_call('{}:complete_total'.format(prefix), o.complete_total)
@@ -49,7 +50,7 @@ def test_offer(parsed_request, pipe):
         'multimodal-offer-item', 'ridesharing-offer-item')
     
 def test_offer_item_mm(parsed_request, pipe):
-    prefix = "{}:{}:{}".format('test-user-ID', 
+    prefix = "{}:{}:{}".format(parsed_request.id, 
         '2a8e0e6c-285d-4c8c-b98f-rs1', 'multimodal-offer-item')
     o = parsed_request.offers['2a8e0e6c-285d-4c8c-b98f-rs1']
     mm_oi = o.offer_items['multimodal-offer-item']
@@ -63,7 +64,7 @@ def test_offer_item_mm(parsed_request, pipe):
         'continuous-leg-1', 'timed-leg-2', 'continuous-leg-3')
 
 def test_offer_item_rs(parsed_request, pipe):
-    prefix = "{}:{}:{}".format('test-user-ID', 
+    prefix = "{}:{}:{}".format(parsed_request.id, 
         '2a8e0e6c-285d-4c8c-b98f-rs1', 'ridesharing-offer-item')
     o = parsed_request.offers['2a8e0e6c-285d-4c8c-b98f-rs1']
     rs_oi = o.offer_items['ridesharing-offer-item']
@@ -77,7 +78,7 @@ def test_offer_item_rs(parsed_request, pipe):
         'ridesharing-leg-4')
 
 def test_trip_leg_1(parsed_request, pipe):
-    prefix = "{}:{}:{}".format('test-user-ID', 
+    prefix = "{}:{}:{}".format(parsed_request.id, 
         '2a8e0e6c-285d-4c8c-b98f-rs1', 'continuous-leg-1')
     o = parsed_request.offers['2a8e0e6c-285d-4c8c-b98f-rs1']
     tl = o.trip.legs['continuous-leg-1']
@@ -93,7 +94,7 @@ def test_trip_leg_1(parsed_request, pipe):
     pipe.set.assert_any_call('{}:last_minute_changes'.format(prefix), '0.34')
 
 def test_trip_leg_2(parsed_request, pipe):
-    prefix = "{}:{}:{}".format('test-user-ID', 
+    prefix = "{}:{}:{}".format(parsed_request.id, 
         '2a8e0e6c-285d-4c8c-b98f-rs1', 'timed-leg-2')
     o = parsed_request.offers['2a8e0e6c-285d-4c8c-b98f-rs1']
     tl = o.trip.legs['timed-leg-2']
@@ -115,14 +116,14 @@ def test_trip_leg_2(parsed_request, pipe):
     pipe.set.assert_any_call('{}:user_feedback'.format(prefix), '4.13')
 
 def test_trip_leg_3(parsed_request, pipe):
-    prefix = "{}:{}:{}".format('test-user-ID', 
+    prefix = "{}:{}:{}".format(parsed_request.id, 
         '2a8e0e6c-285d-4c8c-b98f-rs1', 'continuous-leg-3')
 
     pipe.set.assert_any_call('{}:leg_type'.format(prefix), 'continuous')
     # ContinuousLeg writing already tested
 
 def test_trip_leg_4(parsed_request, pipe):
-    prefix = "{}:{}:{}".format('test-user-ID', 
+    prefix = "{}:{}:{}".format(parsed_request.id, 
         '2a8e0e6c-285d-4c8c-b98f-rs1', 'ridesharing-leg-4')
     o = parsed_request.offers['2a8e0e6c-285d-4c8c-b98f-rs1']
     tl = o.trip.legs['ridesharing-leg-4']

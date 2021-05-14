@@ -1,6 +1,7 @@
 import sys
 import time
 import logging
+import uuid
 
 from trias_extractor import model, codes
 
@@ -24,29 +25,38 @@ def extract_trias(offers):
     parser = etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
 
     try:
-        newtree = etree.fromstring(offers, parser=parser)
+        parsed_trias = etree.fromstring(offers, parser=parser)
     except etree.XMLSyntaxError:
         print('Error: Empty tree.', file=sys.stderr)
         raise Exception(ERREMPTYTREE)
     
     # TripRequest
     # TODO Check whether request id should be generated or parsed
-    request_id = newtree.find('.//coactive:UserId', namespaces=NS).text
+    request_id = str(uuid.uuid4())
     request = model.Request(request_id)
+
+    # TODO Add user_id and/or traveller_id?
+    _user_id = parsed_trias.find('.//coactive:User/coactive:UserId', namespaces=NS)
+    if _user_id != None:
+        request.user_id = _user_id.text
+    _traveller_id = parsed_trias.find('.//coactive:Traveller/coactive:UserId', namespaces=NS)
+    if _traveller_id != None:
+        request.traveller_id = _traveller_id.text
+    
     # TODO Check the namespace
-    _request = newtree.find('.//s2r:TripRequest', namespaces=NS)
+    _request = parsed_trias.find('.//s2r:TripRequest', namespaces=NS)
     if _request != None :
         extract_request(_request, request)
 
     # TripResponseContext
-    trip_response_context = newtree.find('.//ns3:TripResponseContext', namespaces=NS)
+    trip_response_context = parsed_trias.find('.//ns3:TripResponseContext', namespaces=NS)
     locations = {}
     if trip_response_context != None:
         locations = parse_context(trip_response_context)
 
     # TripResults
     try:
-        _trip_results = newtree.findall('.//ns3:TripResult', namespaces=NS)
+        _trip_results = parsed_trias.findall('.//ns3:TripResult', namespaces=NS)
     except AttributeError:
         print('Error: Invalid TRIAS data, no TripResult found.', file=sys.stderr)
         raise Exception(ERRINVALIDDATA)
@@ -92,6 +102,9 @@ def extract_trias(offers):
         for ticket in _offer_items:
                 # Parse Offer Items
                 extract_offer_item(ticket, offers)
+
+    if len(offers.keys()) == 1:
+        logger.warning("Only 1 Offer available for the given request")
 
     return request
 
@@ -226,14 +239,21 @@ def extract_timed_leg(leg_id, leg, spoints):
 
     leg_stops = []
     board = leg.find('ns3:LegBoard/ns3:StopPointRef', namespaces=NS).text
-    leg_stops.append(spoints[board].pos)
+    if board in spoints:
+        leg_stops.append(spoints[board].pos)
+    else:
+        logger.warning("Stop point position not found for LegBoard in TripResponseContext. TimedLeg Id: {}".format(leg_id))
     _intermediates = leg.findall('.//ns3:LegIntermediates', namespaces=NS)
     if _intermediates != None:
         for li in _intermediates:
             li_ref = li.find('ns3:StopPointRef', namespaces=NS).text
-            leg_stops.append(spoints[li_ref].pos)
+            if li_ref in spoints:
+                leg_stops.append(spoints[li_ref].pos)
     alight = leg.find('ns3:LegAlight/ns3:StopPointRef', namespaces=NS).text
-    leg_stops.append(spoints[alight].pos)
+    if alight in spoints:
+        leg_stops.append(spoints[alight].pos)
+    else:
+        logger.warning("Stop point position not found for LegAlight in TripResponseContext. TimedLeg Id: {}".format(leg_id))
 
     service = leg.find('ns3:Service', namespaces=NS)
     journey = service.find('ns3:JourneyRef', namespaces=NS).text
@@ -269,24 +289,30 @@ def extract_continuous_leg(leg_id, leg, locations):
     start = leg.find('ns3:LegStart/ns3:StopPointRef', namespaces=NS)
     if start == None:
         start = leg.find('ns3:LegStart/ns3:AddressRef', namespaces=NS)
-    if start != None:
+    if start != None and start.text in locations:
         leg_stops.append(locations[start.text].pos)
     else:
         pos = leg.find('ns3:LegStart/ns3:GeoPosition', namespaces=NS)
-        lon = pos.find('ns3:Longitude', namespaces=NS).text
-        lat = pos.find('ns3:Latitude', namespaces=NS).text
-        leg_stops.append((float(lon), float(lat)))
+        if pos != None:
+            lon = pos.find('ns3:Longitude', namespaces=NS).text
+            lat = pos.find('ns3:Latitude', namespaces=NS).text
+            leg_stops.append((float(lon), float(lat)))
+        else:
+            logger.warning("LegStart position not found. ContinuousLeg Id: {}".format(leg_id))
         
     end = leg.find('ns3:LegEnd/ns3:StopPointRef', namespaces=NS)
     if end == None:
         end = leg.find('ns3:LegEnd/ns3:AddressRef', namespaces=NS)
-    if end != None:
+    if end != None and end.text in locations:
         leg_stops.append(locations[end.text].pos)
     else:
         pos = leg.find('ns3:LegEnd/ns3:GeoPosition', namespaces=NS)
-        lon = pos.find('ns3:Longitude', namespaces=NS).text
-        lat = pos.find('ns3:Latitude', namespaces=NS).text
-        leg_stops.append((float(lon), float(lat)))
+        if pos != None:
+            lon = pos.find('ns3:Longitude', namespaces=NS).text
+            lat = pos.find('ns3:Latitude', namespaces=NS).text
+            leg_stops.append((float(lon), float(lat)))
+        else:
+            logger.warning("LegEnd position not found. ContinuousLeg Id: {}".format(leg_id))
 
     travel_expert = leg.find('.//coactive:TravelExpertId', namespaces=NS).text
     transportation_mode = leg.find('ns3:Service/ns3:IndividualMode', namespaces=NS).text
