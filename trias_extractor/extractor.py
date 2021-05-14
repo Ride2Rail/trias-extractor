@@ -242,18 +242,20 @@ def extract_timed_leg(leg_id, leg, spoints):
     if board in spoints:
         leg_stops.append(spoints[board].pos)
     else:
-        logger.warning("Stop point position not found for LegBoard in TripResponseContext. TimedLeg Id: {}".format(leg_id))
+        logger.warning("Stop point position not found for LegBoard in TripResponseContext. StopPointRef: {}".format(board))
     _intermediates = leg.findall('.//ns3:LegIntermediates', namespaces=NS)
     if _intermediates != None:
         for li in _intermediates:
             li_ref = li.find('ns3:StopPointRef', namespaces=NS).text
             if li_ref in spoints:
                 leg_stops.append(spoints[li_ref].pos)
+            else:
+                logger.warning("Stop point position not found for IntermediateLeg in TripResponseContext. StopPointRef: {}".format(li_ref))
     alight = leg.find('ns3:LegAlight/ns3:StopPointRef', namespaces=NS).text
     if alight in spoints:
         leg_stops.append(spoints[alight].pos)
     else:
-        logger.warning("Stop point position not found for LegAlight in TripResponseContext. TimedLeg Id: {}".format(leg_id))
+        logger.warning("Stop point position not found for LegAlight in TripResponseContext. StopPointRef: {}".format(alight))
 
     service = leg.find('ns3:Service', namespaces=NS)
     journey = service.find('ns3:JourneyRef', namespaces=NS).text
