@@ -8,7 +8,7 @@
       <coactive:User>
         <coactive:UserId>test-user-ID</coactive:UserId>
         <coactive:Traveller>
-          <coactive:UserId>test-user-ID</coactive:UserId>
+          <coactive:UserId>test-traveller-ID</coactive:UserId>
         </coactive:Traveller>
       </coactive:User>
     </ns3:Extension>
@@ -28,6 +28,7 @@
             <s2r:Latitude>-3.677984</s2r:Latitude>
           </s2r:Position>
         </s2r:ArrivalLocation>
+        <!-- Only one between Departure/Arrival RequestedTravelTime admitted in the XSD -->
         <s2r:RequestedTravelTime>
           <s2r:RequestMode>departure</s2r:RequestMode>
           <s2r:RequestedTime>2020-11-10T07:00:00.000Z</s2r:RequestedTime>
