@@ -118,6 +118,8 @@ def trip_leg_to_cache(tl, pipe, prefix):
         pipe.set("{}:end_time".format(prefix), tl.end_time)
     if tl.duration  != None:
         pipe.set("{}:duration".format(prefix), tl.duration)
+    if tl.length != None:
+        pipe.set("{}:length".format(prefix), tl.length)
     if tl.transportation_mode != None:
         pipe.set("{}:transportation_mode".format(prefix), tl.transportation_mode)
     if tl.leg_stops != None:

@@ -97,6 +97,7 @@ def test_trip_leg_1(parsed_request):
     assert tl.start_time == '2020-11-10T07:08:30.000Z'
     assert tl.end_time == '2020-11-10T07:17:09.000Z'
     assert tl.duration == 'PT8M39S'
+    assert tl.length == 1023
     assert tl.transportation_mode == 'walk'
     assert tl.leg_stops[0] == (-3.663254737854004, 40.38188171386719)
     assert tl.leg_stops[1] == (-3.6711626052856445, 40.38353729248047)

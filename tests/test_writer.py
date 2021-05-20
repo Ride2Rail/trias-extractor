@@ -89,6 +89,7 @@ def test_trip_leg_1(parsed_request, pipe):
     pipe.set.assert_any_call('{}:start_time'.format(prefix), '2020-11-10T07:08:30.000Z')
     pipe.set.assert_any_call('{}:end_time'.format(prefix), '2020-11-10T07:17:09.000Z')
     pipe.set.assert_any_call('{}:duration'.format(prefix), 'PT8M39S')
+    pipe.set.assert_any_call('{}:length'.format(prefix), 1023)
     pipe.set.assert_any_call('{}:transportation_mode'.format(prefix), 'walk')
     pipe.set.assert_any_call('{}:leg_stops'.format(prefix), geojson.dumps(geojson.LineString([(-3.663254737854004, 40.38188171386719),(-3.6711626052856445, 40.38353729248047)])))
     pipe.set.assert_any_call('{}:travel_expert'.format(prefix), 'TMB')

@@ -275,6 +275,9 @@ def extract_continuous_leg(leg_id, leg, locations):
     start_time = leg.find('ns3:TimeWindowStart', namespaces=NS).text
     end_time = leg.find('ns3:TimeWindowEnd', namespaces=NS).text
     duration = leg.find('ns3:Duration', namespaces=NS).text
+    length = leg.find('ns3:Length', namespaces=NS)
+    if length != None:
+        length = int(length.text)
 
     leg_track = extract_leg_track(leg)
     
@@ -311,7 +314,7 @@ def extract_continuous_leg(leg_id, leg, locations):
     transportation_mode = leg.find('ns3:Service/ns3:IndividualMode', namespaces=NS).text
     if transportation_mode != "others-drive-car":
         return model.ContinuousLeg(leg_id, start_time, end_time, leg_track, leg_stops, 
-            transportation_mode, travel_expert, duration)
+            transportation_mode, travel_expert, duration, length)
     else:
         # RideSharing Leg
         sh_service = leg.find('ns3:Service/ns3:SharingService', namespaces=NS)
@@ -323,7 +326,7 @@ def extract_continuous_leg(leg_id, leg, locations):
         vehicle['text'] = sh_service.find('ns3:InfoUrl/ns3:Label/ns3:Text', namespaces=NS).text
         # passenger info are extracted from OIC
         return model.RideSharingLeg(leg_id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert, 
-            duration, driver, vehicle)
+            duration, length, driver, vehicle)
 
 # Extract additional data from the Leg Attributes
 def extract_leg_attributes(_leg, leg):

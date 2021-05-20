@@ -68,6 +68,8 @@ class TripLeg:
         self.transportation_mode = transportation_mode
         self.travel_expert = travel_expert
         self.attributes = {}
+        self.duration = None
+        self.length = None
 
     def add_attribute(self, key, value):
         self.attributes[key] = value
@@ -89,17 +91,18 @@ class TimedLeg(TripLeg):
 class ContinuousLeg(TripLeg):
 
     def __init__(self, id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert, 
-        duration):
+        duration, length):
         super().__init__(id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert)
         self.duration = duration
+        self.length = length
 
     def to_redis(self, pipeline, prefix):
     	writer.continuous_leg_to_cache(self, pipeline, prefix)
 
 class RideSharingLeg(ContinuousLeg):
     def __init__(self, id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert, 
-        duration, driver, vehicle):
-        super().__init__(id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert, duration)
+        duration, length, driver, vehicle):
+        super().__init__(id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert, duration, length)
         self.driver = driver
         self.vehicle = vehicle
 

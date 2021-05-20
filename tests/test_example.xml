@@ -182,6 +182,7 @@
                 <ns3:TimeWindowStart>2020-11-10T07:08:30.000Z</ns3:TimeWindowStart>
                 <ns3:TimeWindowEnd>2020-11-10T07:17:09.000Z</ns3:TimeWindowEnd>
                 <ns3:Duration>PT8M39S</ns3:Duration>
+                <ns3:Length>1023</ns3:Length>
                 <ns3:Extension xsi:type="coactive:LegExtension">
                   <coactive:TravelExpertId>TMB</coactive:TravelExpertId>
                 </ns3:Extension>
