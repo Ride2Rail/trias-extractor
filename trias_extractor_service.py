@@ -43,13 +43,16 @@ def extract():
     offers = request.data
     
     # TODO Add additional validation/Define error codes
+    # TODO Return special value if only one offer?
     try:
         parsed_request = extractor.extract_trias(offers)
-        logger.info("Offers parsed from Trias [request_id:{}]".format(parsed_request.id))
-
-        cache_reply = writer.write_to_cache(cache, parsed_request)
-        logger.debug("Cache write executed {} commands".format(len(cache_reply)))
-        logger.info("Offers inserted in the Cache [request_id:{}]".format(parsed_request.id))
+        if len(parsed_request.offers.keys()) > 1:
+            logger.info("Offers parsed from Trias [request_id:{}]".format(parsed_request.id))
+            cache_reply = writer.write_to_cache(cache, parsed_request)
+            logger.debug("Cache write executed {} commands".format(len(cache_reply)))
+            logger.info("Offers inserted in the Cache [request_id:{}]".format(parsed_request.id))
+        else:
+            logger.warning("Only 1 offer available for the given request")
     except Exception as e:
         abort(500, 'Parsing failed. Exception: {}'.format(e))
 

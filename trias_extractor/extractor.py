@@ -4,6 +4,7 @@ import logging
 import uuid
 
 from trias_extractor import model, codes
+from trias_extractor.exception import ParsingException
 
 from lxml import etree
 
@@ -16,10 +17,6 @@ NS = {'coactive': 'http://shift2rail.org/project/coactive',
       'xsi': 'http://www.w3.org/2001/XMLSchema-instance',
       's2r' : 'http://shift2rail.org/project/'}
 
-# errors
-ERREMPTYTREE = 1
-ERRINVALIDDATA = 2
-
 # Main parsing procedure
 def extract_trias(offers):
     parser = etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
@@ -27,8 +24,7 @@ def extract_trias(offers):
     try:
         parsed_trias = etree.fromstring(offers, parser=parser)
     except etree.XMLSyntaxError:
-        print('Error: Empty tree.', file=sys.stderr)
-        raise Exception(ERREMPTYTREE)
+        raise ParsingException('Error: Empty tree.')
     
     # TripRequest
     # TODO Check whether request id should be generated or parsed
@@ -44,6 +40,7 @@ def extract_trias(offers):
         request.traveller_id = _traveller_id.text
     
     # TODO Check the namespace
+    # TODO Check if locations from TripResponseContext are needed
     _request = parsed_trias.find('.//s2r:TripRequest', namespaces=NS)
     if _request != None :
         extract_request(_request, request)
@@ -58,8 +55,7 @@ def extract_trias(offers):
     try:
         _trip_results = parsed_trias.findall('.//ns3:TripResult', namespaces=NS)
     except AttributeError:
-        print('Error: Invalid TRIAS data, no TripResult found.', file=sys.stderr)
-        raise Exception(ERRINVALIDDATA)
+        raise ParsingException('Error: Invalid TRIAS data, no TripResult found.')
 
     offers = {}
 
@@ -88,7 +84,7 @@ def extract_trias(offers):
             if l != None:
                 trip.add_leg(l)
             else:
-                logger.error("Unknown Leg found with LegId: " + leg_id)
+                raise ParsingException("Not parsable Leg found with LegId " + leg_id)
 
         # Offer
         _offer_items = trip_result.findall('.//ns3:Ticket', namespaces=NS)
@@ -103,14 +99,10 @@ def extract_trias(offers):
                 # Parse Offer Items
                 extract_offer_item(ticket, offers)
 
-    if len(offers.keys()) == 1:
-        logger.warning("Only 1 Offer available for the given request")
-
     return request
 
 def extract_request(_request, request):
     _r_times = _request.findall('.//s2r:RequestedTravelTime', namespaces=NS)
-    # TODO Is it possible to have both requested arrival and departure times?
     if _r_times != None:
         for r_time in _r_times:
             mode = r_time.find('s2r:RequestMode', namespaces=NS).text
@@ -156,8 +148,7 @@ def extract_offer_item(ticket, offers):
         offer_id = offer_item_ticket.find('coactive:OfferId', namespaces=NS).text
         o = offers[offer_id]
         if (o == None):
-            print("No associated Offer found")
-            return
+            raise ParsingException("No associated offer found for offer item {}".format(offer_item_id))
         o.add_offer_item(o_i)
 
         _leg_ids = offer_item_ticket.findall('.//coactive:TravelEpisodeId', namespaces=NS)

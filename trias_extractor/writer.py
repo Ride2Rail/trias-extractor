@@ -3,6 +3,8 @@ import redis
 import geojson
 import logging
 
+from trias_extractor.exception import ParsingException
+
 # logger
 logger = logging.getLogger()
 
@@ -27,11 +29,11 @@ def request_to_cache(r, pipe):
 
     # TODO Add user_id and/or traveller_id?
     if r.user_id != None:
-    	    pipe.set("{}:user_id".format(prefix), r.user_id)
+    	pipe.set("{}:user_id".format(prefix), r.user_id)
     if r.traveller_id != None:
-    	    pipe.set("{}:traveller_id".format(prefix), r.traveller_id)
+    	pipe.set("{}:traveller_id".format(prefix), r.traveller_id)
     if r.start_time != None:
-    	    pipe.set("{}:start_time".format(prefix), r.start_time)
+    	pipe.set("{}:start_time".format(prefix), r.start_time)
     if r.end_time != None:
         pipe.set("{}:end_time".format(prefix), r.end_time)
     if r.start_point != None:
@@ -42,10 +44,14 @@ def request_to_cache(r, pipe):
             geojson.dumps(geojson.Point(r.end_point)))
 
     # Offers
-    pipe.lpush("{}:offers".format(prefix),*(r.offers.keys()))
-    for key in r.offers.keys():
+    offer_ids = r.offers.keys()
+    if len(offer_ids) > 0:
+        pipe.lpush("{}:offers".format(prefix),*(offer_ids))
+    else:
+        raise ParsingException("No offers found for the request")
+    for key in offer_ids:
         offer_to_cache(r.offers[key], pipe, prefix)
-
+    
     logger.debug("Request {} added to the pipeline".format(r.id))
 
 # Adds to the pipeline (pipe) the commands to serialize a model.Offer
@@ -74,7 +80,11 @@ def offer_to_cache(o, pipe, prefix):
         pipe.hmset("{}:complete_total".format(prefix), o.complete_total)
 
     # Offer Items
-    pipe.lpush("{}:offer_items".format(prefix),*(o.offer_items.keys()))
+    offer_item_ids = o.offer_items.keys()
+    if len(offer_item_ids) > 0:
+        pipe.lpush("{}:offer_items".format(prefix),*(offer_item_ids))
+    else:
+        raise ParsingException("No offer items for the offer {}".format(o.id))
     for key in o.offer_items.keys():
         offer_item_to_cache(o.offer_items[key], pipe, prefix)
 
@@ -92,7 +102,10 @@ def offer_item_to_cache(o_i, pipe, prefix):
     if o_i.fares_authority_text  != None:
         pipe.set("{}:fares_authority_text".format(prefix), o_i.fares_authority_text)
     # Legs
-    pipe.lpush("{}:legs".format(prefix),*(o_i.leg_ids))
+    if len(o_i.leg_ids) > 0:
+        pipe.lpush("{}:legs".format(prefix),*(o_i.leg_ids))
+    else:
+        raise ParsingException("No legs for the offer item {}".format(o_i.id))
 
     logger.debug("Offer Item {} added to the pipeline".format(o_i.id))
 
@@ -149,4 +162,3 @@ def ridesharing_leg_to_cache(tl, pipe, prefix):
         pipe.hmset("{}:vehicle".format(prefix), tl.vehicle)
 
     logger.debug("Ridesharing Leg {} added to the pipeline".format(tl.id))
-
