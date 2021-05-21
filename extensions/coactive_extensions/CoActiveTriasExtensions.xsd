@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema version="0.5.1" xmlns="http://shift2rail.org/project/coactive" xmlns:trias="http://www.vdv.de/trias" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://shift2rail.org/project/coactive" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:import schemaLocation="../trias/Trias.xsd" namespace="http://www.vdv.de/trias"/>
+	<xs:include schemaLocation="Trias_UserExtension.xsd"/>
+	<xs:include schemaLocation="Trias_Meta_TicketExtension.xsd"/>
+	<xs:include schemaLocation="Trias_OfferItem_TicketExtension.xsd"/>
+	<xs:include schemaLocation="Trias_LegExtension.xsd"/>
+	<xs:include schemaLocation="Trias_ServiceRequestExtension.xsd"/>
+	<xs:include schemaLocation="Trias_ServiceResponseExtension.xsd"/>
+</xs:schema>

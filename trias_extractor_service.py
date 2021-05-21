@@ -1,6 +1,7 @@
 import os
 import configparser as cp
 import logging
+from trias_extractor.exception import ParsingException
 
 from flask import Flask, request, abort
 import redis
@@ -42,22 +43,21 @@ def extract():
     request.get_data()
     offers = request.data
     
-    # TODO Add additional validation/Define error codes
-    # TODO Return special value if only one offer?
     try:
         parsed_request = extractor.extract_trias(offers)
-        if len(parsed_request.offers.keys()) > 1:
-            logger.info("Offers parsed from Trias [request_id:{}]".format(parsed_request.id))
-            cache_reply = writer.write_to_cache(cache, parsed_request)
-            logger.debug("Cache write executed {} commands".format(len(cache_reply)))
-            logger.info("Offers inserted in the Cache [request_id:{}]".format(parsed_request.id))
-        else:
-            logger.warning("Only 1 offer available for the given request")
+        logger.info("Offers parsed from Trias [request_id:{}]".format(parsed_request.id))
+        num_offers = len(parsed_request.offers.keys())
+
+        cache_reply = writer.write_to_cache(cache, parsed_request)
+        logger.debug("Cache write executed {} commands".format(len(cache_reply)))
+        logger.info("Offers inserted in the Cache [request_id:{}]".format(parsed_request.id))
+    except ParsingException as e:
+        abort(400, 'Error in parsing the Trias request: {}'.format(e))
     except Exception as e:
-        abort(500, 'Parsing failed. Exception: {}'.format(e))
+        abort(500, 'Trias Extractor error. Exception: {}'.format(e))
 
     response = app.response_class(
-        response='{{ "request_id" : "{}" }}'.format(parsed_request.id),
+        response='{{ "request_id" : "{}", "num_offers": "{}" }}'.format(parsed_request.id, num_offers),
         status=200,
         mimetype='application/json'
     )

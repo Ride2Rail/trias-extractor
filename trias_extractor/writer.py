@@ -27,11 +27,6 @@ def write_to_cache(cache, request):
 def request_to_cache(r, pipe):
     prefix = r.id
 
-    # TODO Add user_id and/or traveller_id?
-    if r.user_id != None:
-    	pipe.set("{}:user_id".format(prefix), r.user_id)
-    if r.traveller_id != None:
-    	pipe.set("{}:traveller_id".format(prefix), r.traveller_id)
     if r.start_time != None:
     	pipe.set("{}:start_time".format(prefix), r.start_time)
     if r.end_time != None:
@@ -47,8 +42,7 @@ def request_to_cache(r, pipe):
     offer_ids = r.offers.keys()
     if len(offer_ids) > 0:
         pipe.lpush("{}:offers".format(prefix),*(offer_ids))
-    else:
-        raise ParsingException("No offers found for the request")
+    # else: no offer found
     for key in offer_ids:
         offer_to_cache(r.offers[key], pipe, prefix)
     
@@ -83,8 +77,7 @@ def offer_to_cache(o, pipe, prefix):
     offer_item_ids = o.offer_items.keys()
     if len(offer_item_ids) > 0:
         pipe.lpush("{}:offer_items".format(prefix),*(offer_item_ids))
-    else:
-        raise ParsingException("No offer items for the offer {}".format(o.id))
+    # else: a Offer without associated Offer Items means no purchase needed
     for key in o.offer_items.keys():
         offer_item_to_cache(o.offer_items[key], pipe, prefix)
 

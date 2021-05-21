@@ -24,23 +24,13 @@ def extract_trias(offers):
     try:
         parsed_trias = etree.fromstring(offers, parser=parser)
     except etree.XMLSyntaxError:
-        raise ParsingException('Error: Empty tree.')
+        raise ParsingException('Error parsing the Trias structure.')
     
     # TripRequest
-    # TODO Check whether request id should be generated or parsed
+    # Generate identifier for the request received
     request_id = str(uuid.uuid4())
     request = model.Request(request_id)
-
-    # TODO Add user_id and/or traveller_id?
-    _user_id = parsed_trias.find('.//coactive:User/coactive:UserId', namespaces=NS)
-    if _user_id != None:
-        request.user_id = _user_id.text
-    _traveller_id = parsed_trias.find('.//coactive:Traveller/coactive:UserId', namespaces=NS)
-    if _traveller_id != None:
-        request.traveller_id = _traveller_id.text
     
-    # TODO Check the namespace
-    # TODO Check if locations from TripResponseContext are needed
     _request = parsed_trias.find('.//s2r:TripRequest', namespaces=NS)
     if _request != None :
         extract_request(_request, request)
@@ -52,10 +42,7 @@ def extract_trias(offers):
         locations = parse_context(trip_response_context)
 
     # TripResults
-    try:
-        _trip_results = parsed_trias.findall('.//ns3:TripResult', namespaces=NS)
-    except AttributeError:
-        raise ParsingException('Error: Invalid TRIAS data, no TripResult found.')
+    _trip_results = parsed_trias.findall('.//ns3:TripResult', namespaces=NS)
 
     offers = {}
 
@@ -89,14 +76,14 @@ def extract_trias(offers):
         # Offer
         _offer_items = trip_result.findall('.//ns3:Ticket', namespaces=NS)
         for metaticket in _offer_items:
-            offer_item_id = metaticket.find('.//ns3:TicketId', namespaces=NS).text
+            offer_item_id = metaticket.find('ns3:TicketId', namespaces=NS).text
             if offer_item_id == "META":
                 # Parse Offer
                 offer = extract_offer(metaticket, trip)
                 offers[offer.id] = offer
                 request.add_offer(offer)
+        # Parse Offer Items and associate them to Offers
         for ticket in _offer_items:
-                # Parse Offer Items
                 extract_offer_item(ticket, offers)
 
     return request
