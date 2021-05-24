@@ -43,7 +43,8 @@ def test_trip(parsed_request):
     assert t.duration == 'PT42M30S'
     assert t.start_time == '2020-11-10T07:08:30.000Z'
     assert t.end_time == '2020-11-10T07:51:00.000Z'
-    assert t.num_interchanges == '1'
+    assert t.num_interchanges == 1
+    assert t.length == 24677
 
     assert len(t.ordered_legs_ids) == 4
     assert t.ordered_legs_ids[0] == 'continuous-leg-1'
@@ -111,6 +112,7 @@ def test_trip_leg_2(parsed_request):
     assert tl.start_time == '2020-11-10T07:17:10.000Z'
     assert tl.end_time == '2020-11-10T07:23:47.000Z'
     assert tl.duration == 'PT6M37S'
+    assert tl.length == 2042
     assert tl.transportation_mode == 'bus'
 
     # Test with intermediate stop as Address location
@@ -149,6 +151,7 @@ def test_trip_leg_4(parsed_request):
     assert tl.start_time == '2020-11-10T07:30:00.000Z'
     assert tl.end_time == '2020-11-10T07:51:00.000Z'
     assert tl.duration == 'PT21M'
+    assert tl.length == 21362
     assert tl.transportation_mode == 'others-drive-car'
     assert tl.leg_stops[0] == (-3.677985906600952, 40.395389556884766)
     assert tl.leg_stops[1] == (-3.7923872470855713, 40.29673385620117)

@@ -62,6 +62,8 @@ def offer_to_cache(o, pipe, prefix):
         pipe.set("{}:end_time".format(prefix), t.end_time)
     if t.num_interchanges != None:
         pipe.set("{}:num_interchanges".format(prefix), t.num_interchanges)
+    if t.length != None:
+        pipe.set("{}:length".format(prefix), t.length)
     # Legs
     for key in t.ordered_legs_ids:
         pipe.lpush("{}:legs".format(prefix), key)

@@ -198,15 +198,19 @@ def parse_context(context):
     
     return locations
 
-# Parses mandatory data about a Trip
+# Parses data about a Trip
 def extract_trip(trip):
     trip_id = trip.find('ns3:TripId', namespaces=NS).text
     duration = trip.find('ns3:Duration', namespaces=NS).text
     start_time = trip.find('ns3:StartTime', namespaces=NS).text
     end_time = trip.find('ns3:EndTime', namespaces=NS).text
-    num_interchanges = trip.find('ns3:Interchanges', namespaces=NS).text
+    num_interchanges = int(trip.find('ns3:Interchanges', namespaces=NS).text)
+    length = None
+    _length = trip.find('ns3:Distance', namespaces=NS)
+    if (_length != None):
+        length = int(_length.text)
 
-    return model.Trip(trip_id, duration, start_time, end_time, num_interchanges)
+    return model.Trip(trip_id, duration, start_time, end_time, num_interchanges, length)
 
 # Parses a TimedLeg
 def extract_timed_leg(leg_id, leg, spoints):
@@ -214,6 +218,10 @@ def extract_timed_leg(leg_id, leg, spoints):
     end_time = leg.find('ns3:LegAlight/ns3:ServiceArrival/ns3:TimetabledTime', namespaces=NS).text
 
     leg_track = extract_leg_track(leg)
+    _length = leg.find('ns3:LegTrack/ns3:TrackSection/ns3:Length', namespaces=NS)
+    length = None
+    if _length != None:
+        length = int(_length.text)
 
     leg_stops = []
     board = leg.find('ns3:LegBoard/ns3:StopPointRef', namespaces=NS).text
@@ -242,7 +250,7 @@ def extract_timed_leg(leg_id, leg, spoints):
 
     travel_expert = leg.find('.//coactive:TravelExpertId', namespaces=NS).text
     
-    return model.TimedLeg(leg_id, start_time, end_time, leg_track, leg_stops, 
+    return model.TimedLeg(leg_id, start_time, end_time, leg_track, length, leg_stops, 
         transportation_mode, travel_expert, line, journey)
 
 # Extracts the leg track (list of pairs of coordinates) from a Projection node
@@ -262,11 +270,17 @@ def extract_continuous_leg(leg_id, leg, locations):
     start_time = leg.find('ns3:TimeWindowStart', namespaces=NS).text
     end_time = leg.find('ns3:TimeWindowEnd', namespaces=NS).text
     duration = leg.find('ns3:Duration', namespaces=NS).text
-    length = leg.find('ns3:Length', namespaces=NS)
-    if length != None:
-        length = int(length.text)
 
     leg_track = extract_leg_track(leg)
+
+    length = None
+    _length = leg.find('ns3:Length', namespaces=NS)
+    if _length != None:
+        length = int(_length.text)
+    else:
+        _length = leg.find('ns3:LegTrack/ns3:TrackSection/ns3:Length', namespaces=NS)
+        if _length != None:
+            length = int(_length.text)
     
     leg_stops = []
     start = leg.find('ns3:LegStart/ns3:StopPointRef', namespaces=NS)
@@ -300,8 +314,8 @@ def extract_continuous_leg(leg_id, leg, locations):
     travel_expert = leg.find('.//coactive:TravelExpertId', namespaces=NS).text
     transportation_mode = leg.find('ns3:Service/ns3:IndividualMode', namespaces=NS).text
     if transportation_mode != "others-drive-car":
-        return model.ContinuousLeg(leg_id, start_time, end_time, leg_track, leg_stops, 
-            transportation_mode, travel_expert, duration, length)
+        return model.ContinuousLeg(leg_id, start_time, end_time, leg_track, length, leg_stops, 
+            transportation_mode, travel_expert, duration)
     else:
         # RideSharing Leg
         sh_service = leg.find('ns3:Service/ns3:SharingService', namespaces=NS)
@@ -312,8 +326,8 @@ def extract_continuous_leg(leg_id, leg, locations):
         vehicle['id'] = sh_service.find('ns3:InfoUrl/ns3:Url', namespaces=NS).text
         vehicle['text'] = sh_service.find('ns3:InfoUrl/ns3:Label/ns3:Text', namespaces=NS).text
         # passenger info are extracted from OIC
-        return model.RideSharingLeg(leg_id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert, 
-            duration, length, driver, vehicle)
+        return model.RideSharingLeg(leg_id, start_time, end_time, leg_track, length, leg_stops, transportation_mode, travel_expert, 
+            duration, driver, vehicle)
 
 # Extract additional data from the Leg Attributes
 def extract_leg_attributes(_leg, leg):

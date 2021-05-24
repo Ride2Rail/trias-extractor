@@ -34,12 +34,13 @@ class Offer:
 
 class Trip:
 
-    def __init__(self, id, duration, start_time, end_time, num_interchanges):
+    def __init__(self, id, duration, start_time, end_time, num_interchanges, length):
         self.id = id
         self.duration = duration
         self.start_time = start_time
         self.end_time = end_time
         self.num_interchanges = num_interchanges
+        self.length = length
         self.ordered_legs_ids = []
         self.legs = {}
 
@@ -59,7 +60,7 @@ class OfferItem:
 
 class TripLeg:
 
-    def __init__(self, id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert):
+    def __init__(self, id, start_time, end_time, leg_track, length, leg_stops, transportation_mode, travel_expert):
         self.id = id
         self.start_time = start_time
         self.end_time = end_time
@@ -68,17 +69,17 @@ class TripLeg:
         self.transportation_mode = transportation_mode
         self.travel_expert = travel_expert
         self.attributes = {}
+        self.length = length
         self.duration = None
-        self.length = None
 
     def add_attribute(self, key, value):
         self.attributes[key] = value
 
 class TimedLeg(TripLeg):
 
-    def __init__(self, id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert, 
+    def __init__(self, id, start_time, end_time, leg_track, length, leg_stops, transportation_mode, travel_expert, 
         line, journey):
-        super().__init__(id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert)
+        super().__init__(id, start_time, end_time, leg_track, length, leg_stops, transportation_mode, travel_expert)
         # self.duration = end_time - start_time
         delta = dateutil.parser.parse(end_time) - dateutil.parser.parse(start_time)
         self.duration = str(isodate.duration_isoformat(delta))
@@ -90,19 +91,18 @@ class TimedLeg(TripLeg):
 
 class ContinuousLeg(TripLeg):
 
-    def __init__(self, id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert, 
-        duration, length):
-        super().__init__(id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert)
+    def __init__(self, id, start_time, end_time, leg_track, length, leg_stops, transportation_mode, travel_expert, 
+        duration):
+        super().__init__(id, start_time, end_time, leg_track, length, leg_stops, transportation_mode, travel_expert)
         self.duration = duration
-        self.length = length
 
     def to_redis(self, pipeline, prefix):
     	writer.continuous_leg_to_cache(self, pipeline, prefix)
 
 class RideSharingLeg(ContinuousLeg):
-    def __init__(self, id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert, 
-        duration, length, driver, vehicle):
-        super().__init__(id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert, duration, length)
+    def __init__(self, id, start_time, end_time, leg_track, length, leg_stops, transportation_mode, travel_expert, 
+        duration, driver, vehicle):
+        super().__init__(id, start_time, end_time, leg_track, length, leg_stops, transportation_mode, travel_expert, duration)
         self.driver = driver
         self.vehicle = vehicle
 

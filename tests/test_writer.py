@@ -43,7 +43,8 @@ def test_offer(parsed_request, pipe):
     pipe.set.assert_any_call('{}:duration'.format(prefix), 'PT42M30S')
     pipe.set.assert_any_call('{}:start_time'.format(prefix), '2020-11-10T07:08:30.000Z')
     pipe.set.assert_any_call('{}:end_time'.format(prefix), '2020-11-10T07:51:00.000Z')
-    pipe.set.assert_any_call('{}:num_interchanges'.format(prefix), '1')
+    pipe.set.assert_any_call('{}:num_interchanges'.format(prefix), 1)
+    pipe.set.assert_any_call('{}:length'.format(prefix), 24677)
 
     pipe.lpush.assert_any_call('{}:offer_items'.format(prefix), 
         'multimodal-offer-item', 'ridesharing-offer-item')
@@ -103,6 +104,7 @@ def test_trip_leg_2(parsed_request, pipe):
     pipe.set.assert_any_call('{}:start_time'.format(prefix), '2020-11-10T07:17:10.000Z')
     pipe.set.assert_any_call('{}:end_time'.format(prefix), '2020-11-10T07:23:47.000Z')
     pipe.set.assert_any_call('{}:duration'.format(prefix), 'PT6M37S')
+    pipe.set.assert_any_call('{}:length'.format(prefix), 2042)
     pipe.set.assert_any_call('{}:transportation_mode'.format(prefix), 'bus')
     pipe.set.assert_any_call('{}:leg_stops'.format(prefix), geojson.dumps(geojson.LineString([(-3.6711626052856445, 40.38353729248047),(-3.67111362, 40.383737),(-3.677884578704834, 40.3937873840332)])))
     pipe.set.assert_any_call('{}:leg_track'.format(prefix), geojson.dumps(geojson.LineString([(-3.671162, 40.383537),(-3.677884, 40.393787)])))
@@ -132,6 +134,7 @@ def test_trip_leg_4(parsed_request, pipe):
     pipe.set.assert_any_call('{}:start_time'.format(prefix), '2020-11-10T07:30:00.000Z')
     pipe.set.assert_any_call('{}:end_time'.format(prefix), '2020-11-10T07:51:00.000Z')
     pipe.set.assert_any_call('{}:duration'.format(prefix), 'PT21M')
+    pipe.set.assert_any_call('{}:length'.format(prefix), 21362)
     pipe.set.assert_any_call('{}:transportation_mode'.format(prefix), 'others-drive-car')
     pipe.set.assert_any_call('{}:leg_stops'.format(prefix), geojson.dumps(geojson.LineString([(-3.677985906600952, 40.395389556884766),(-3.7923872470855713, 40.29673385620117)])))
     pipe.set.assert_any_call('{}:travel_expert'.format(prefix), 'r2r_cbtsp')

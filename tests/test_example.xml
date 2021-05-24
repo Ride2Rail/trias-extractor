@@ -161,6 +161,7 @@
             <ns3:StartTime>2020-11-10T07:08:30.000Z</ns3:StartTime>
             <ns3:EndTime>2020-11-10T07:51:00.000Z</ns3:EndTime>
             <ns3:Interchanges>1</ns3:Interchanges>
+            <ns3:Distance>24677</ns3:Distance>
             <ns3:TripLeg>
               <ns3:LegId>continuous-leg-1</ns3:LegId>
               <ns3:ContinuousLeg>
@@ -240,6 +241,7 @@
                 </ns3:Service>
                 <ns3:LegTrack>
                     <ns3:TrackSection>
+                      <ns3:Length>2042</ns3:Length>
                       <ns3:Projection>
                         <ns3:Position>
                           <ns3:Longitude>-3.671162</ns3:Longitude>
@@ -278,6 +280,7 @@
                 <ns3:TimeWindowStart>2020-11-10T07:23:47.000Z</ns3:TimeWindowStart>
                 <ns3:TimeWindowEnd>2020-11-10T07:26:00.000Z</ns3:TimeWindowEnd>
                 <ns3:Duration>PT2M13S</ns3:Duration>
+                <ns3:Length>250</ns3:Length>
                 <ns3:Extension xsi:type="coactive:LegExtension">
                   <coactive:TravelExpertId>TMB</coactive:TravelExpertId>
                 </ns3:Extension>
@@ -320,6 +323,7 @@
                 <ns3:TimeWindowStart>2020-11-10T07:30:00.000Z</ns3:TimeWindowStart>
                 <ns3:TimeWindowEnd>2020-11-10T07:51:00.000Z</ns3:TimeWindowEnd>
                 <ns3:Duration>PT21M</ns3:Duration>
+                <ns3:Length>21362</ns3:Length>
                 <ns3:Extension xsi:type="coactive:LegExtension">
                   <coactive:TravelExpertId>r2r_cbtsp</coactive:TravelExpertId>
                 </ns3:Extension>
