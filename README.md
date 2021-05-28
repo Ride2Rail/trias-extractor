@@ -8,9 +8,9 @@
 
 ## Description 
 
-The `trias-extractor` offer parser  is a module of the **Ride2Rail Offer Categorizer** responsible for parsing offers from Trias and for converting them to the _offer cache_ schema enabling  the categorization.
+The `trias-extractor` offer parser is a module of the **Ride2Rail Offer Categorizer** responsible for parsing offers from Trias and for converting them to the _offer cache_ schema enabling  the categorization.
 
-The parsed input format is mainly based on the [Trias specification](https://github.com/VDVde/TRIAS) for a `TripResponse` message but takes also into account: (i) extensions to the specification developed by Shift2Rail IP4 projects, and (ii) the ridesharing offer structure defined by Ride2Rail.
+The parsed input format is mainly based on the [Trias specification](https://github.com/VDVde/TRIAS) for a `TripResponse` message but takes also into account custom extensions (available in the folder `extensions`) developed by Shift2Rail IP4 projects, i.e., the Coactive extensions and the extensions defined for Ride2Rail.
 
 The procedure implemented by the `trias-extractor` is composed of two main phases.
 
@@ -21,11 +21,11 @@ Parsing of data required from the Trias file provided to an intermediate represe
 The defined model reflects the _offer cache_ schema:
 - **Request**: id, start_time, end_time, start_point, end_point, ***offers*** (dictionary of associated *Offer* objects)
 - **Offer**: id, trip, bookable_total, complete_total, ***offer_items***  (dictionary of associated *OfferItem* objects)
-- **Trip**: id, duration, start_time, end_time, num_interchanges, **legs** (dictionary of associated *TripLeg* objects)
+- **Trip**: id, duration, start_time, end_time, num_interchanges, length, **legs** (dictionary of associated *TripLeg* objects)
 - **OfferItem**: id, name, fares_authority_ref, fares_authority_text, price, leg_ids (list of ids of *TripLeg* objects covered by the *OfferItem* object)
-- **TripLeg**: id, start_time, end_time, leg_track, leg_stops, transportation_mode, travel_expert, attributes (dictionary of key-value pairs)
+- **TripLeg**: id, start_time, end_time, duration, leg_track, length, leg_stops, transportation_mode, travel_expert, attributes (dictionary of key-value pairs)
     - **TimedLeg**(TripLeg): line, journey
-    - **ContinuousLeg**(TripLeg): duration 
+    - **ContinuousLeg**(TripLeg) 
         - **RideSharingLeg**(ContinuousLeg): driver, vehicle
 
 *Location* and its subclasses (*StopPoint*, *Address*) are used to support the processing but are not serialized in the _offer cache_.
@@ -39,15 +39,40 @@ The parsing procedure is implemented through the following steps:
 5.  Parse the Trias `Ticket` associated with each Meta-`Ticket` obtaining a list of `model.OfferItem` associated with a `model.Offer` and with the `model.TripLeg`s covered by the offer item.
 6.  Parse the `OfferItemContext` for each Trias `Ticket` obtaining a dictionary of key-value pairs bound to specific `model.TripLeg`s associated to the `model.OfferItem`
 
-**Note on step 6**: If the `OfferItemContext` contains a composite key, the assumption is that it is composed as `oic_key:leg_id` and the parsed value should be associated only with the `model.TripLeg` having the provided `leg_id`. In all the other cases the value parsed is associated to all the `model.TripLeg`s associated with the `model.OfferItem`. The information extracted from the `OfferItemContext` is merged with the `Attribute`s parsed for each `model.TripLeg`.
+**Notes**:
+- _Step 1_: a UUID is automatically assigned to each request received by the `trias-extractor` and used as id for the `model.Request` object
+- _Step 5_: a `model.Offer` can be associated with no `model.OfferItem` if a purchase is not needed to perform the trip
+- _Step 6_: If the `OfferItemContext` contains a composite key, the assumption is that it is composed as `oic_key:leg_id` and the parsed value should be associated only with the `model.TripLeg` having the provided `leg_id`. In all the other cases the value parsed is associated to all the `model.TripLeg`s associated with the `model.OfferItem`. The information extracted from the `OfferItemContext` is merged with the `Attribute`s parsed for each `model.TripLeg`.
 
 ### Phase II: Writing 
 
 Storing of the data parsed by the `trias-extractor` to the offer cache. A dedicated procedure is defined for in the ***writer.py*** module. The complete serialization is composed of queued commands in a pipeline that is executed as a single write to the _offer cache_.
 
-### Implementation
+## Usage
+The `trias-extractor` component is implemented as a _Python_ application using the _Flask_ framework to expose the described procedure as a service. Each Trias file processed by the `trias-extractor` component is mapped to a *Request* object and then serialized in the _offer cache_. 
 
-The `trias-extractor` component is implemented as a _Python_ application using the _Flask_ framework to expose the described procedure as a service. Each Trias file processed by the `trias-extractor` component is mapped to a *Request* object and then serialized in the _offer cache_. The _request_id_ (key to access the data from the cache) is returned in the response as a field in a JSON body.
+### Request
+Example request running the `trias-extractor` locally.
+```bash
+$ curl --header 'Content-Type: application/xml' \
+       --request POST  \
+       --data-binary '@trias/$FILE_NAME' \
+         http://localhost:5000/extract
+```
+
+Adding Trias requests to a `trias` folder in the repository root, the `load.sh` script can be used to automatically launch the _trias-extractor_ service, the _offer cache_ and process the files. The _offer cache_ data are persisted in the `./data` folder.
+
+### Output
+The _request_id_ (key to access the data parsed from the _offer cache_) is returned in the response as a field in a JSON body together with the number of offers parsed. Example output:
+
+```json
+{ 
+  "request_id": "581ec560-251e-4dbe-9e52-8f824bda5eb0",
+  "num_offers": "15" 
+}
+```
+
+Error code `400` is returned if there is an error in the parsing procedure, code `500` if the request fails for any other reason.
 
 ## Configuration
 
@@ -59,9 +84,9 @@ Section ***cache***:
 
 The  ***trias_extractor/config/codes.csv*** can be modified to configure the parsing procedure of the `Attribute`s associated with the different _TripLeg_ nodes and the _offer item context_ associated with the different _Ticket_ nodes (offer items). The file defines the admissible keys (`key` column), the expected range of the values  (`value_min` and `value_max` columns for numeric datatypes) and the datatype (`type` column, admissible values are `string`, `int`, `float`, `date`) to execute a preliminary validation of the value parsed. 
 
-## Usage
+## Deployment
 
-Adding Trias requests to a `trias` folder in the repository root, the `load.sh` script can be used to automatically launch the _trias-extractor_ service, the _offer cache_ and parse the files. The _offer cache_ data are persisted in the `./data` folder.
+Different alternatives are provided to deploy the `trias-extractor` service.
 
 ### Local development (debug on)
 
@@ -85,18 +110,10 @@ $ docker-compose build
 $ docker-compose up
 ```
 
-### Production development
+### Production deployment
 Change the `build` section in the docker-compose file to use the `Dockerfile.production` configuration that runs the Flask app on `gunicorn`, remove the `environment` section.
 ```bash
 $ docker-compose build
 $ docker-compose up
 ```
 Edit the `Dockerfile.production` file to set a different `gunicorn` configuration.
-
-### Example Request
-```bash
-$ curl --header 'Content-Type: application/xml' \
-       --request POST  \
-       --data-binary '@trias/$FILE_NAME' \
-         http://localhost:5000/extract
-```

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema version="0.5.1" xmlns="http://shift2rail.org/project/coactive" xmlns:trias="http://www.vdv.de/trias" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://shift2rail.org/project/coactive" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	
+	<xs:complexType name="UserExtension">
+		<xs:annotation>
+			<xs:documentation>Information about the user that made the request </xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="UserId" type="xs:NMTOKEN">
+				<xs:annotation>
+					<xs:documentation>Id of the user that made the request</xs:documentation>
+				</xs:annotation>
+			</xs:element>	
+			<xs:element name="Traveller" type="Traveller" minOccurs="1" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Travellers of the requested journey</xs:documentation>
+				</xs:annotation>
+			</xs:element>	
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="Traveller">
+		<xs:choice>
+			<xs:element name="UserId" type="xs:NMTOKEN">
+				<xs:annotation>
+					<xs:documentation>UserId of an already registered traveller</xs:documentation>
+				</xs:annotation>
+			</xs:element>		
+			<xs:element name="TravellerInformation" type="TravellerInformation">
+				<xs:annotation>
+					<xs:documentation>Information about an unregistered traveller</xs:documentation>
+				</xs:annotation>
+			</xs:element>			
+		</xs:choice>
+	</xs:complexType>
+	
+	<xs:complexType name="TravellerInformation">
+		<xs:annotation>
+			<xs:documentation>Traveller information</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="TravellerName" type="TravellerName">
+				<xs:annotation>
+					<xs:documentation>Name of the traveller</xs:documentation>
+				</xs:annotation>
+			</xs:element>		
+			<xs:element name="DateOfBirth" type="xs:date" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Date of birth</xs:documentation>
+				</xs:annotation>
+			</xs:element>	
+			<xs:element name="Contact" type="Contact" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Contact</xs:documentation>
+				</xs:annotation>
+			</xs:element>			
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="TravellerName">
+		<xs:annotation>
+			<xs:documentation>Traveller name</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Title" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Title of the traveller</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="FirstName" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>First Name</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Surname" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Surename</xs:documentation>
+				</xs:annotation>
+			</xs:element>			
+		</xs:sequence>
+		
+	</xs:complexType>
+		<xs:complexType name="Contact">
+		<xs:annotation>
+			<xs:documentation>Traveller contact</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Email" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Email</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Phone" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Phone</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Address" type="Address" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Address</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="Address">
+		<xs:annotation>
+			<xs:documentation>Address</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Street" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Street</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="StreetNumber" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Street number</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="City" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>City</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="PostalCode" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Postal code</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Country" type="xs:string" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>country</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

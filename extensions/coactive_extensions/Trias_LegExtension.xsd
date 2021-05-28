@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema version="0.5.1" xmlns="http://shift2rail.org/project/coactive" xmlns:trias="http://www.vdv.de/trias" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://shift2rail.org/project/coactive" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	
+	<xs:simpleType name="TravelEpisodeState" final="restriction">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="TRACKED">
+				<xs:annotation>
+					<xs:documentation>The travel episode is tracked and tracking is available</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="NAVIGATED">
+				<xs:annotation>
+					<xs:documentation>The travel episode is navigated and navogation is available</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="PASSED">
+				<xs:annotation>
+					<xs:documentation>The user has passed this travel episode</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:complexType name="LegExtension">
+		<xs:annotation>
+			<xs:documentation>Root element for Trias leg extension</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="TravelExpertId" type="xs:NMTOKEN" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>ID of travel expert that provided the leg the extension is contained in</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="TravelEpisodeState" type="TravelEpisodeState" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>State of the travel episode</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

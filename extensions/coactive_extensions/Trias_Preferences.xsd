@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema version="0.5.1" xmlns="http://shift2rail.org/project/coactive" xmlns:trias="http://www.vdv.de/trias" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://shift2rail.org/project/coactive" elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+	<xs:complexType name="Preferences">
+		<xs:annotation>
+			<xs:documentation>User preferences</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Categories" type="Category" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Categories of the preferences</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="Translate">
+		<xs:annotation>
+			<xs:documentation>Displayable text in a specified language</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Name" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>ID of the travel expert this request is addressed to</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Language" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Language the Name is represented in</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="Value">
+		<xs:annotation>
+			<xs:documentation>Value of a preference entry</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Key" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Key of the value</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Translate" type="Translate">
+				<xs:annotation>
+					<xs:documentation>Displayable name of the value</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Score" type="xs:decimal" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Score of the value</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="Element">
+		<xs:annotation>
+			<xs:documentation>A group of values</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Key" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Key of the value</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Type" type="xs:integer">
+				<xs:annotation>
+					<xs:documentation>Type of the element</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Translate" type="Translate">
+				<xs:annotation>
+					<xs:documentation>Displayable name of the element</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Values" type="Value" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Values belonging to this element</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="Subcategory">
+		<xs:annotation>
+			<xs:documentation>A group of elements</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Key" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Key of the subcategory</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Translate" type="Translate">
+				<xs:annotation>
+					<xs:documentation>Displayable name of the subcategory</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Elements" type="Element" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Elements belonging to this subcategory</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="Category">
+		<xs:annotation>
+			<xs:documentation>A group of subcategories</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Key" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Key of the category</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Translate" type="Translate">
+				<xs:annotation>
+					<xs:documentation>Displayable name of the category</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Subcategories" type="Subcategory" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Subcategories belonging to this category</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

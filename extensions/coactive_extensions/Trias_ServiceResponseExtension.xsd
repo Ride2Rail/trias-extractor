@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema version="0.5.1" xmlns="http://shift2rail.org/project/coactive" xmlns:trias="http://www.vdv.de/trias" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://shift2rail.org/project/coactive" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:include schemaLocation="Trias_UserExtension.xsd"/>
+	<xs:include schemaLocation="Trias_Preferences.xsd"/>
+
+	<xs:complexType name="ServiceResponseExtension">
+		<xs:annotation>
+			<xs:documentation>Root element for Trias ServiceRequest extension</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="User" type="UserExtension">
+				<xs:annotation>
+					<xs:documentation>User and Traveller information of this request</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Preferences" type="Preferences" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Preferences of the user</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

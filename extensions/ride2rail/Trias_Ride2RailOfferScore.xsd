@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+        version="0.6.0"
+        xmlns="http://shift2rail.org/project/coactive"
+        xmlns:trias="http://www.vdv.de/trias"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        targetNamespace="http://shift2rail.org/project/coactive"
+        elementFormDefault="qualified"
+        attributeFormDefault="unqualified">
+    <xs:complexType name="Ride2RailOfferScore">
+        <xs:annotation>
+            <xs:documentation>Scoring of an offer</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element
+                    name="OfferId"
+                    type="xs:NMTOKEN"
+                    minOccurs="1"
+                    maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Id of the scored offer</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element
+                    name="Categories"
+                    type="Ride2RailScoreCategory"
+                    minOccurs="0"
+                    maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Categories the score consists of</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element
+                    name="Ranking"
+                    type="xs:integer"
+                    minOccurs="1"
+                    maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Ordered ranking of the offers</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element
+                    name="RankingScore"
+                    type="Ride2RailScore"
+                    minOccurs="1"
+                    maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Score the ranking is based on</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Ride2RailScoreCategory">
+        <xs:annotation>
+            <xs:documentation>Single score component</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element
+                    name="Name"
+                    type="xs:NMTOKEN"
+                    minOccurs="1"
+                    maxOccurs="1" />
+            <xs:element
+                    name="Score"
+                    type="Ride2RailScore"
+                    minOccurs="1"
+                    maxOccurs="1" />
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="Ride2RailScore">
+        <xs:restriction base="xs:decimal">
+            <xs:minInclusive value="0" />
+            <xs:maxInclusive value="1" />
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

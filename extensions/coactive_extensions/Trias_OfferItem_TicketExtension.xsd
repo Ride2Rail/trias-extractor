@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema version="0.5.1" xmlns="http://shift2rail.org/project/coactive" xmlns:trias="http://www.vdv.de/trias" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://shift2rail.org/project/coactive" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:import schemaLocation="../trias/Trias.xsd" namespace="http://www.vdv.de/trias"/>
+	<xs:complexType name="OfferItemContext">
+		<xs:sequence>
+			<xs:element name="Code" type="xs:NMTOKEN"/>
+			<xs:element name="Value" type="xs:string" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="TravelEpisodeValidity">
+		<xs:sequence>
+			<xs:element name="TravelEpisodeId" type="xs:NMTOKEN" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Id of the travel episode included in the validity</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:simpleType name="OfferItemType" final="restriction">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="ancillary"/>
+			<xs:enumeration value="itinerary"/>
+		</xs:restriction>
+	</xs:simpleType>
+	
+	<xs:complexType name="BusinessRule">
+		<xs:sequence>
+			<xs:element name="BusinessRuleId" type="xs:NMTOKEN">
+				<xs:annotation>
+					<xs:documentation>Id of the business rule</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ExpirationDate" type="xs:dateTime" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Expiration date of the business rule</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="OfferItemTicketExtension">
+		<xs:annotation>
+			<xs:documentation>Root element for TRIAS ticket extension</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="OfferId" type="xs:NMTOKEN">
+				<xs:annotation>
+					<xs:documentation>OfferId of the offer this offer item belongs to.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Validity" type="TravelEpisodeValidity" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Validity of this offer item. If absent, the offer item is not associated to any travel episodes</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="OfferItemType" type="OfferItemType">
+				<xs:annotation>
+					<xs:documentation>Type of the OfferItem</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="IsBookable" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>Defines wether the OfferItem is bookable</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="OfferItemState" type="xs:NMTOKEN" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>State of the offer item</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="AppliedBusinessRule" type="BusinessRule" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Business rules applied to this OfferItem</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="OfferItemContext" type="OfferItemContext" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Meta information on TSP specific offer item information. Codes must be unique</xs:documentation>
+				</xs:annotation>		
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

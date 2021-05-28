@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema version="0.5.1" xmlns="http://shift2rail.org/project/coactive" xmlns:trias="http://www.vdv.de/trias" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://shift2rail.org/project/coactive" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:import schemaLocation="../trias/Trias.xsd" namespace="http://www.vdv.de/trias"/>
+	
+	<xs:complexType name="Price">
+		<xs:annotation>
+			<xs:documentation>Price information</xs:documentation>
+		</xs:annotation>
+		<xs:group ref="trias:TicketPriceGroup"/>
+	</xs:complexType>
+	
+	<xs:complexType name="Prices">
+		<xs:annotation>
+			<xs:documentation>Includes prices for bookable and non bookable total</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="BookableTotal" type="Price">
+				<xs:annotation>
+					<xs:documentation>Total of all offer items that are actually bookable</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CompleteTotal" type="Price">
+				<xs:annotation>
+					<xs:documentation>Total of all offer items</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="MetaTicketExtension">
+		<xs:annotation>
+			<xs:documentation>Mandatory extension for the trias meta ticket which is grouping an offer</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="OfferId" type="xs:NMTOKEN">
+				<xs:annotation>
+					<xs:documentation>OfferId of the offer this ticket is grouping.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="TripId" type="xs:NMTOKEN">
+				<xs:annotation>
+					<xs:documentation>TripId of the trip this ticket and thus the offer belongs to</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="OfferState" type="xs:NMTOKEN" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>State of the offer</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Prices" type="Prices">
+				<xs:annotation>
+					<xs:documentation>Prices of the offer</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

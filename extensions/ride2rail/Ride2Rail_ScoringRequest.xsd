@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema
+    version="0.0.2"
+    xmlns="http://shift2rail.org/project/"
+    xmlns:trias="http://www.vdv.de/trias"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://shift2rail.org/project/"
+    elementFormDefault="qualified"
+    attributeFormDefault="unqualified">
+  <xs:import
+      schemaLocation="../coactive_extensions/CoActiveTriasExtensions.xsd"
+      namespace="http://www.vdv.de/trias" />
+
+  <xs:element name="Ride2RailScoringRequest">
+    <xs:complexType>
+      <xs:annotation>
+        <xs:documentation>Request to score included trips</xs:documentation>
+      </xs:annotation>
+      <xs:sequence>
+        <xs:element
+            name="TripRequest"
+            type="TripRequest"
+            minOccurs="1"
+            maxOccurs="1" />
+        <xs:element
+            name="TripResponse"
+            type="trias:TripResponseStructure"
+            minOccurs="1"
+            maxOccurs="1" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="TripRequest">
+    <xs:annotation>
+      <xs:documentation>Trip request sent to shopping orchestrator</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element
+          name="DepartureLocation"
+          type="Location"
+          minOccurs="1"
+          maxOccurs="1" />
+      <xs:element
+          name="ArrivalLocation"
+          type="Location"
+          minOccurs="1"
+          maxOccurs="1" />
+      <xs:element
+          name="RequestedTravelTime"
+          type="RequestedTravelTime"
+          minOccurs="1"
+          maxOccurs="1" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="Location">
+    <xs:choice>
+      <xs:element
+          name="Id"
+          type="xs:string"
+          minOccurs="1"
+          maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>ID of location</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element
+          name="Position"
+          type="GeoPosition"
+          minOccurs="1"
+          maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>Geographic position of the location</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="GeoPosition">
+    <xs:annotation>
+      <xs:documentation>Geographic position using WGS 84</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element
+          name="Latitude"
+          type="xs:decimal"
+          minOccurs="1"
+          maxOccurs="1" />
+      <xs:element
+          name="Longitude"
+          type="xs:decimal"
+          minOccurs="1"
+          maxOccurs="1" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType
+      name="RequestedTravelTime"
+      final="restriction">
+    <xs:sequence>
+      <xs:element
+          name="RequestMode"
+          type="TravelTimeRequestMode"
+          minOccurs="1"
+          maxOccurs="1" />
+      <xs:element
+          name="RequestedTime"
+          type="ZonedDateTime"
+          minOccurs="1"
+          maxOccurs="1" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="TravelTimeRequestMode">
+    <xs:restriction base="xs:NMTOKEN">
+      <xs:enumeration value="departure" />
+      <xs:enumeration value="arrival" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ZonedDateTime">
+    <xs:restriction base="xs:dateTime">
+      <xs:pattern value=".+Z" />
+      <xs:pattern value=".+(\+|-)\d\d:\d\d" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>
