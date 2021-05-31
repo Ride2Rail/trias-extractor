@@ -99,15 +99,15 @@ def extract_request(_request, request):
             if mode == "arrival":
                 request.end_time = datetime
 
-    _r_d_location = _request.find('s2r:DepartureLocation/s2r:Position', namespaces=NS)
+    _r_d_location = _request.find('s2r:DepartureLocation', namespaces=NS)
     if _r_d_location != None:
-        r_d_lat = float(_r_d_location.find('s2r:Latitude', namespaces=NS).text)
-        r_d_long = float(_r_d_location.find('s2r:Longitude', namespaces=NS).text)
+        r_d_lat = float(_r_d_location.find('.//s2r:Latitude', namespaces=NS).text)
+        r_d_long = float(_r_d_location.find('.//s2r:Longitude', namespaces=NS).text)
         request.start_point = (r_d_long, r_d_lat)
-    _r_a_location = _request.find('s2r:ArrivalLocation/s2r:Position', namespaces=NS)
+    _r_a_location = _request.find('s2r:ArrivalLocation', namespaces=NS)
     if _r_a_location != None:
-        r_a_lat = float(_r_a_location.find('s2r:Latitude', namespaces=NS).text)
-        r_a_long = float(_r_a_location.find('s2r:Longitude', namespaces=NS).text)
+        r_a_lat = float(_r_a_location.find('.//s2r:Latitude', namespaces=NS).text)
+        r_a_long = float(_r_a_location.find('.//s2r:Longitude', namespaces=NS).text)
         request.end_point = (r_a_long, r_a_lat)
 
 # Add Offer Items to Offers parsing Ticket nodes from TRIAS

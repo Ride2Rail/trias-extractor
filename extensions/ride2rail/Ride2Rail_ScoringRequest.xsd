@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema
-    version="0.0.2"
+    version="0.0.3"
     xmlns="http://shift2rail.org/project/"
     xmlns:trias="http://www.vdv.de/trias"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
@@ -24,7 +24,7 @@
             maxOccurs="1" />
         <xs:element
             name="TripResponse"
-            type="trias:TripResponseStructure"
+            type="TripResponse"
             minOccurs="1"
             maxOccurs="1" />
       </xs:sequence>
@@ -38,12 +38,12 @@
     <xs:sequence>
       <xs:element
           name="DepartureLocation"
-          type="Location"
+          type="GeoPosition"
           minOccurs="1"
           maxOccurs="1" />
       <xs:element
           name="ArrivalLocation"
-          type="Location"
+          type="GeoPosition"
           minOccurs="1"
           maxOccurs="1" />
       <xs:element
@@ -54,27 +54,13 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="Location">
-    <xs:choice>
+  <xs:complexType name="TripResponse">
+    <xs:sequence>
       <xs:element
-          name="Id"
-          type="xs:string"
+          ref="trias:Trias"
           minOccurs="1"
-          maxOccurs="1">
-        <xs:annotation>
-          <xs:documentation>ID of location</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element
-          name="Position"
-          type="GeoPosition"
-          minOccurs="1"
-          maxOccurs="1">
-        <xs:annotation>
-          <xs:documentation>Geographic position of the location</xs:documentation>
-        </xs:annotation>
-      </xs:element>
-    </xs:choice>
+          maxOccurs="1" />
+    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="GeoPosition">

@@ -2,18 +2,12 @@
 <Ride2RailScoringRequest xmlns="http://shift2rail.org/project/" xmlns:coactive="http://shift2rail.org/project/coactive" xmlns:ns2="http://www.siri.org.uk/siri" xmlns:ns3="http://www.vdv.de/trias" xmlns:ns5="http://www.ifopt.org.uk/acsb" xmlns:ns6="http://www.ifopt.org.uk/ifopt" xmlns:ns7="http://datex2.eu/schema/1_0/1_0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <TripRequest>
     <DepartureLocation>
-      <Id>departure_request_location</Id>
-      <Position>
-        <Longitude>-3.671161</Longitude>
-        <Latitude>-3.663255</Latitude>      
-      </Position>
-    </DepartureLocation>
+      <Longitude>-3.671161</Longitude>
+      <Latitude>-3.663255</Latitude> 
+    </DepartureLocation>     
     <ArrivalLocation>
-      <Id>arrival_request_location</Id>
-      <Position>
-        <Longitude>-3.792386</Longitude>
-        <Latitude>-3.677984</Latitude>
-      </Position>
+      <Longitude>-3.792386</Longitude>
+      <Latitude>-3.677984</Latitude>
     </ArrivalLocation>
     <!-- Only one between Departure/Arrival RequestedTravelTime admitted in the XSD -->
     <RequestedTravelTime>
