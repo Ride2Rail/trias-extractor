@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Remove comment to re-build the Docker image
+# docker-compose build --no-cache
+
 # Start Cache and Trias-Extractor service
 docker-compose up -d
 
@@ -19,7 +22,7 @@ for test in `ls -d -v ./trias/*` ; do
 done
 
 # Ensure the entire cache is dumped in the .rdb file 
-sleep 5
+sleep 60
 docker exec -i cache redis-cli SAVE
 
 # Stop Cache and Trias-Extractor service
