@@ -15,6 +15,8 @@ def parsed_request():
     return parsed_request
 
 def test_request(parsed_request):
+    assert parsed_request.user_id == 'test-user-ID'
+    assert parsed_request.traveller_id == 'test-traveller-ID'
     assert parsed_request.start_time == '2020-11-10T07:00:00.000Z'
     assert parsed_request.end_time == '2020-11-10T08:00:00.000Z'
     assert parsed_request.start_point == (-3.671161, -3.663255)

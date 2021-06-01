@@ -27,6 +27,10 @@ def write_to_cache(cache, request):
 def request_to_cache(r, pipe):
     prefix = r.id
 
+    if r.user_id != None:
+    	pipe.set("{}:user_id".format(prefix), r.user_id)
+    if r.traveller_id != None:
+    	pipe.set("{}:traveller_id".format(prefix), r.traveller_id)
     if r.start_time != None:
     	pipe.set("{}:start_time".format(prefix), r.start_time)
     if r.end_time != None:

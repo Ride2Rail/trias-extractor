@@ -23,6 +23,8 @@ def pipe(parsed_request):
 
 def test_request(parsed_request, pipe):  
     prefix = parsed_request.id
+    pipe.set.assert_any_call('{}:user_id'.format(prefix), 'test-user-ID')
+    pipe.set.assert_any_call('{}:traveller_id'.format(prefix), 'test-traveller-ID')
     pipe.set.assert_any_call('{}:start_time'.format(prefix), '2020-11-10T07:00:00.000Z')
     pipe.set.assert_any_call('{}:end_time'.format(prefix), '2020-11-10T08:00:00.000Z')
     pipe.set.assert_any_call('{}:start_point'.format(prefix), geojson.dumps(geojson.Point((-3.671161, -3.663255))))

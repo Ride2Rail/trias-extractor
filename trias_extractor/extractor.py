@@ -29,11 +29,9 @@ def extract_trias(offers):
     # TripRequest
     # Generate identifier for the request received
     request_id = str(uuid.uuid4())
-    request = model.Request(request_id)
-    
-    _request = parsed_trias.find('.//s2r:TripRequest', namespaces=NS)
-    if _request != None :
-        extract_request(_request, request)
+    request = model.Request(request_id) 
+    # Extract mobility request and user info
+    extract_request(parsed_trias, request)
 
     # TripResponseContext
     trip_response_context = parsed_trias.find('.//ns3:TripResponseContext', namespaces=NS)
@@ -88,27 +86,40 @@ def extract_trias(offers):
 
     return request
 
-def extract_request(_request, request):
-    _r_times = _request.findall('.//s2r:RequestedTravelTime', namespaces=NS)
-    if _r_times != None:
-        for r_time in _r_times:
-            mode = r_time.find('s2r:RequestMode', namespaces=NS).text
-            datetime = r_time.find('s2r:RequestedTime', namespaces=NS).text
-            if mode == "departure":
-                request.start_time = datetime
-            if mode == "arrival":
-                request.end_time = datetime
+def extract_request(parsed_trias, request):
+    # Mobility Request info
+    _request = parsed_trias.find('.//s2r:TripRequest', namespaces=NS)
+    if _request != None :
+        _r_times = _request.findall('.//s2r:RequestedTravelTime', namespaces=NS)
+        if _r_times != None:
+            for r_time in _r_times:
+                mode = r_time.find('s2r:RequestMode', namespaces=NS).text
+                datetime = r_time.find('s2r:RequestedTime', namespaces=NS).text
+                if mode == "departure":
+                    request.start_time = datetime
+                if mode == "arrival":
+                    request.end_time = datetime
 
-    _r_d_location = _request.find('s2r:DepartureLocation', namespaces=NS)
-    if _r_d_location != None:
-        r_d_lat = float(_r_d_location.find('.//s2r:Latitude', namespaces=NS).text)
-        r_d_long = float(_r_d_location.find('.//s2r:Longitude', namespaces=NS).text)
-        request.start_point = (r_d_long, r_d_lat)
-    _r_a_location = _request.find('s2r:ArrivalLocation', namespaces=NS)
-    if _r_a_location != None:
-        r_a_lat = float(_r_a_location.find('.//s2r:Latitude', namespaces=NS).text)
-        r_a_long = float(_r_a_location.find('.//s2r:Longitude', namespaces=NS).text)
-        request.end_point = (r_a_long, r_a_lat)
+        _r_d_location = _request.find('s2r:DepartureLocation', namespaces=NS)
+        if _r_d_location != None:
+            r_d_lat = float(_r_d_location.find('.//s2r:Latitude', namespaces=NS).text)
+            r_d_long = float(_r_d_location.find('.//s2r:Longitude', namespaces=NS).text)
+            request.start_point = (r_d_long, r_d_lat)
+        _r_a_location = _request.find('s2r:ArrivalLocation', namespaces=NS)
+        if _r_a_location != None:
+            r_a_lat = float(_r_a_location.find('.//s2r:Latitude', namespaces=NS).text)
+            r_a_long = float(_r_a_location.find('.//s2r:Longitude', namespaces=NS).text)
+            request.end_point = (r_a_long, r_a_lat)
+
+    # User info
+    _user = parsed_trias.find('.//coactive:User', namespaces=NS)
+    if(_user != None):
+        _user_id = _user.find('coactive:UserId', namespaces=NS)
+        if _user_id != None:
+            request.user_id = _user_id.text
+        _traveller_id = _user.find('coactive:Traveller/coactive:UserId', namespaces=NS)
+        if _traveller_id != None:
+            request.traveller_id = _traveller_id.text
 
 # Add Offer Items to Offers parsing Ticket nodes from TRIAS
 def extract_offer_item(ticket, offers):
