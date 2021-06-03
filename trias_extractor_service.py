@@ -52,8 +52,10 @@ def extract():
         logger.debug("Cache write executed {} commands".format(len(cache_reply)))
         logger.info("Offers inserted in the Cache [request_id:{}]".format(parsed_request.id))
     except ParsingException as e:
+        logger.exception(e)
         abort(400, 'Error in parsing the Trias request: {}'.format(e))
     except Exception as e:
+        logger.exception(e)
         abort(500, 'Trias Extractor error. Exception: {}'.format(e))
 
     response = app.response_class(

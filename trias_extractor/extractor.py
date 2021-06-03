@@ -143,15 +143,18 @@ def extract_offer_item(ticket, offers):
 
         # Extension
         offer_item_ticket = ticket.find("ns3:Extension[ @xsi:type = 'coactive:OfferItemTicketExtension' ]", namespaces=NS)
-        offer_id = offer_item_ticket.find('coactive:OfferId', namespaces=NS).text
-        o = offers[offer_id]
-        if (o == None):
-            raise ParsingException("No associated offer found for offer item {}".format(offer_item_id))
-        o.add_offer_item(o_i)
+        if (offer_item_ticket != None):
+            offer_id = offer_item_ticket.find('coactive:OfferId', namespaces=NS).text
+            o = offers[offer_id]
+            if (o == None):
+                raise ParsingException("No associated offer found for offer item {}".format(offer_item_id))
+            o.add_offer_item(o_i)
 
-        _leg_ids = offer_item_ticket.findall('.//coactive:TravelEpisodeId', namespaces=NS)
-        for id in _leg_ids:
-            o_i.leg_ids.append(id.text)
+            _leg_ids = offer_item_ticket.findall('.//coactive:TravelEpisodeId', namespaces=NS)
+            for id in _leg_ids:
+                o_i.leg_ids.append(id.text)
+        else:
+            raise ParsingException("coactive:OfferItemTicketExtension not found for ticket {}".format(offer_item_id))
 
         # Parse Offer Item Context
         extract_from_oic(offer_item_ticket, o, o_i)
@@ -159,20 +162,23 @@ def extract_offer_item(ticket, offers):
 # Returns an Offer parsing a META-Ticket
 def extract_offer(ticket, trip):
     offer = ticket.find("ns3:Extension[ @xsi:type = 'coactive:MetaTicketExtension' ]", namespaces=NS)
-    offer_id = offer.find('coactive:OfferId', namespaces=NS).text
+    if offer != None:
+        offer_id = offer.find('coactive:OfferId', namespaces=NS).text
 
-    prices = offer.find('coactive:Prices', namespaces=NS)
-    _bookable_total = prices.find('coactive:BookableTotal', namespaces=NS)
-    bt_p = _bookable_total.find('ns3:Price', namespaces=NS).text
-    bt_c = _bookable_total.find('ns3:Currency', namespaces=NS).text
-    bookable_total = (bt_p, bt_c)
+        prices = offer.find('coactive:Prices', namespaces=NS)
+        _bookable_total = prices.find('coactive:BookableTotal', namespaces=NS)
+        bt_p = _bookable_total.find('ns3:Price', namespaces=NS).text
+        bt_c = _bookable_total.find('ns3:Currency', namespaces=NS).text
+        bookable_total = (bt_p, bt_c)
 
-    _complete_total = prices.find('coactive:CompleteTotal', namespaces=NS)
-    ct_p = _complete_total.find('ns3:Price', namespaces=NS).text
-    ct_c = _complete_total.find('ns3:Currency', namespaces=NS).text
-    complete_total = (ct_p, ct_c)
+        _complete_total = prices.find('coactive:CompleteTotal', namespaces=NS)
+        ct_p = _complete_total.find('ns3:Price', namespaces=NS).text
+        ct_c = _complete_total.find('ns3:Currency', namespaces=NS).text
+        complete_total = (ct_p, ct_c)
 
-    return model.Offer(offer_id, trip, bookable_total, complete_total)
+        return model.Offer(offer_id, trip, bookable_total, complete_total)
+    else:
+        raise ParsingException("coactive:MetaTicketExtension not found for trip {}".format(trip.id))
 
 # Returns a dictionary of id:Location parsing a TripResponseContext node
 def parse_context(context):
