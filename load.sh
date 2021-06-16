@@ -4,7 +4,7 @@
 # docker-compose build --no-cache
 
 # Start Cache and Trias-Extractor service
-docker-compose up -d
+# docker-compose up -d
 
 # Check if everything is up and running
 sleep 5
@@ -13,7 +13,7 @@ while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://127.0.0.1:5000/check
 done
 
 # Load to the Cache all the TRIAS files in the ./trias folder
-for test in `ls -d -v ./trias/*` ; do
+for test in `ls -d -v ./trias/*.xml` ; do
 	TEST_NAME="$(basename "$test")"
 	echo $TEST_NAME
 	DATA="@trias/$TEST_NAME"

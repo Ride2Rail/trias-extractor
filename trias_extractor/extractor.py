@@ -102,14 +102,16 @@ def extract_request(parsed_trias, request):
 
         _r_d_location = _request.find('s2r:DepartureLocation', namespaces=NS)
         if _r_d_location != None:
-            r_d_lat = float(_r_d_location.find('.//s2r:Latitude', namespaces=NS).text)
-            r_d_long = float(_r_d_location.find('.//s2r:Longitude', namespaces=NS).text)
-            request.start_point = (r_d_long, r_d_lat)
+            _r_d_lat = _r_d_location.find('.//s2r:Latitude', namespaces=NS)
+            _r_d_long = _r_d_location.find('.//s2r:Longitude', namespaces=NS)
+            if _r_d_lat != None and _r_d_long != None:
+                request.start_point = (float(_r_d_long.text), float(_r_d_lat.text))
         _r_a_location = _request.find('s2r:ArrivalLocation', namespaces=NS)
         if _r_a_location != None:
-            r_a_lat = float(_r_a_location.find('.//s2r:Latitude', namespaces=NS).text)
-            r_a_long = float(_r_a_location.find('.//s2r:Longitude', namespaces=NS).text)
-            request.end_point = (r_a_long, r_a_lat)
+            _r_a_lat = _r_a_location.find('.//s2r:Latitude', namespaces=NS)
+            _r_a_long = _r_a_location.find('.//s2r:Longitude', namespaces=NS)
+            if _r_a_lat != None and _r_a_long != None:
+                request.end_point = (float(_r_a_long.text), float(_r_a_lat.text))
 
     # User info
     _user = parsed_trias.find('.//coactive:User', namespaces=NS)
