@@ -4,7 +4,7 @@
 # docker-compose build --no-cache
 
 # Start Cache and Trias-Extractor service
-# docker-compose up -d
+docker-compose up -d
 
 # Check if everything is up and running
 sleep 5
