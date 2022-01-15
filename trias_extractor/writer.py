@@ -41,6 +41,8 @@ def request_to_cache(r, pipe):
     if r.end_point != None:
         pipe.set("{}:end_point".format(prefix),
             geojson.dumps(geojson.Point(r.end_point)))
+    if r.max_transfers != None:
+        pipe.set("{}:max_transfers".format(prefix), r.max_transfers)
 
     # Offers
     offer_ids = r.offers.keys()

@@ -113,6 +113,12 @@ def extract_request(parsed_trias, request):
             if _r_a_lat != None and _r_a_long != None:
                 request.end_point = (float(_r_a_long.text), float(_r_a_lat.text))
 
+        _r_d_transfers = _request.find('s2r:Transfers', namespaces=NS)
+        if _r_d_transfers != None:
+            _r_d_max_transfers = _r_d_transfers.find('.//s2r:MaxTransfers', namespaces=NS)
+            if _r_d_max_transfers != None:
+                request.max_transfers = int(_r_d_max_transfers.text)
+
     # User info
     _user = parsed_trias.find('.//coactive:User', namespaces=NS)
     if(_user != None):

@@ -16,6 +16,7 @@ class Request:
         self.end_time = None
         self.start_point = None
         self.end_point = None
+        self.max_transfers = None
 
     def add_offer(self, offer):
         self.offers[offer.id] = offer
