@@ -16,7 +16,15 @@ class Request:
         self.end_time = None
         self.start_point = None
         self.end_point = None
+        self.cycling_dist_to_stop = None
+        self.walking_dist_to_stop = None
+        self.walking_speed = None
+        self.cycling_speed = None
+        self.driving_speed = None
         self.max_transfers = None
+        self.expected_duration = None
+        self.via = []
+
 
     def add_offer(self, offer):
         self.offers[offer.id] = offer

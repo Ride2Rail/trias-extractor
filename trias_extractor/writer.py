@@ -43,6 +43,22 @@ def request_to_cache(r, pipe):
             geojson.dumps(geojson.Point(r.end_point)))
     if r.max_transfers != None:
         pipe.set("{}:max_transfers".format(prefix), r.max_transfers)
+    if r.cycling_dist_to_stop != None:
+        pipe.set("{}:cycling_dist_to_stop".format(prefix), r.cycling_dist_to_stop)
+    if r.walking_dist_to_stop != None:
+        pipe.set("{}:walking_dist_to_stop".format(prefix), r.walking_dist_to_stop)
+    if r.walking_speed != None:
+        pipe.set("{}:walking_speed".format(prefix), r.walking_speed)
+    if r.cycling_speed != None:
+        pipe.set("{}:cycling_speed".format(prefix), r.cycling_speed)
+    if r.driving_speed != None:
+        pipe.set("{}:driving_speed".format(prefix), r.driving_speed)
+    if r.max_transfers != None:
+        pipe.set("{}:max_transfers".format(prefix), r.max_transfers)
+    if r.expected_duration != None:
+        pipe.set("{}:expected_duration".format(prefix), r.expected_duration)
+    if len(r.via) > 0:
+        pipe.lpush("{}:via".format(prefix), *(r.via))
 
     # Offers
     offer_ids = r.offers.keys()

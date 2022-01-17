@@ -113,11 +113,34 @@ def extract_request(parsed_trias, request):
             if _r_a_lat != None and _r_a_long != None:
                 request.end_point = (float(_r_a_long.text), float(_r_a_lat.text))
 
-        _r_d_transfers = _request.find('s2r:Transfers', namespaces=NS)
-        if _r_d_transfers != None:
-            _r_d_max_transfers = _r_d_transfers.find('.//s2r:MaxTransfers', namespaces=NS)
-            if _r_d_max_transfers != None:
-                request.max_transfers = int(_r_d_max_transfers.text)
+        _r_d_walk_dist_to_stop = _request.find('s2r:WalkingDistanceToStop', namespaces=NS)
+        if _r_d_walk_dist_to_stop != None:
+            request.walking_dist_to_stop = int(_r_d_walk_dist_to_stop.text)
+        _r_d_cycling_dist_to_stop = _request.find('s2r:CyclingDistanceToStop', namespaces=NS)
+        if _r_d_cycling_dist_to_stop != None:
+            request.cycling_dist_to_stop = int(_r_d_cycling_dist_to_stop.text)
+
+        _r_d_walking_speed = _request.find('s2r:WalkingSpeed', namespaces=NS)
+        if _r_d_walking_speed != None:
+            request.walking_speed = _r_d_walking_speed.text
+        _r_d_cycling_speed = _request.find('s2r:CyclingSpeed', namespaces=NS)
+        if _r_d_cycling_speed != None:
+            request.cycling_speed = _r_d_cycling_speed.text
+        _r_d_driving_speed = _request.find('s2r:DrivingSpeed', namespaces=NS)
+        if _r_d_driving_speed != None:
+            request.driving_speed = _r_d_driving_speed.text
+
+        _r_d_max_transfers = _request.find('s2r:MaxTransfers', namespaces=NS)
+        if _r_d_max_transfers != None:
+            request.max_transfers = _r_d_max_transfers.text
+        _r_d_expected_duration = _request.find('s2r:ExpectedDuration', namespaces=NS)
+        if _r_d_expected_duration != None:
+            request.expected_duration = _r_d_expected_duration.text
+        _r_a_via = _request.find('s2r:Via', namespaces=NS)
+        if _r_a_via != None:
+            via_points = _r_a_via.findall('.//s2r:ViaPoint', namespaces=NS)
+            for via_point in via_points:
+                request.via.append(via_point.text)
 
     # User info
     _user = parsed_trias.find('.//coactive:User', namespaces=NS)
