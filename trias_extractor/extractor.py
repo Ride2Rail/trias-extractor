@@ -134,13 +134,8 @@ def extract_request(parsed_trias, request):
         _r_d_expected_duration = _request.find('s2r:MinTransferTime', namespaces=NS)
         if _r_d_expected_duration != None:
             request.expected_duration = _r_d_expected_duration.text
-        _r_a_via = _request.find('s2r:ViaLocation', namespaces=NS)
-        if _r_a_via != None:
-            via_points = _r_a_via.findall('.//s2r:GeoPosition', namespaces=NS)
-            for via_point in via_points:
-                geo_coord = __extract_lon_lat(via_point)
-                if geo_coord != None:
-                    request.via_locations.append(f'{geo_coord[0]},{geo_coord[1]}')
+        # extracts via locations as list of coordinate tuples
+        request.via_locations = extract_coordinate_pairs(_request, 's2r', 's2r:ViaLocation')
 
     # User info
     _user = parsed_trias.find('.//coactive:User', namespaces=NS)
@@ -274,7 +269,7 @@ def extract_timed_leg(leg_id, leg, spoints):
     start_time = leg.find('ns3:LegBoard/ns3:ServiceDeparture/ns3:TimetabledTime', namespaces=NS).text
     end_time = leg.find('ns3:LegAlight/ns3:ServiceArrival/ns3:TimetabledTime', namespaces=NS).text
 
-    leg_track = extract_leg_track(leg)
+    leg_track = extract_coordinate_pairs(leg)
     _length = leg.find('ns3:LegTrack/ns3:TrackSection/ns3:Length', namespaces=NS)
     length = None
     if _length != None:
@@ -321,6 +316,17 @@ def extract_leg_track(leg):
             track.append((float(p_lon), float(p_lat)))
         return track
     return None
+# Extracts list of pairs of coordinates from a list of positions into a list of lon, lat tuples
+def extract_coordinate_pairs(element, coord_ns="ns3", xml_element_path='ns3:LegTrack/ns3:TrackSection/ns3:Projection'):
+    _positions = element.find(xml_element_path, namespaces=NS)
+    if _positions != None:
+        position_list = []
+        for pos in list(_positions):
+            p_lon = pos.find(f'{coord_ns}:Longitude', namespaces=NS).text
+            p_lat = pos.find(f'{coord_ns}:Latitude', namespaces=NS).text
+            position_list.append((float(p_lon), float(p_lat)))
+        return position_list
+    return None
 
 # Parses and returns a ContinuousLeg/RideSharingLeg
 def extract_continuous_leg(leg_id, leg, locations):
@@ -328,7 +334,7 @@ def extract_continuous_leg(leg_id, leg, locations):
     end_time = leg.find('ns3:TimeWindowEnd', namespaces=NS).text
     duration = leg.find('ns3:Duration', namespaces=NS).text
 
-    leg_track = extract_leg_track(leg)
+    leg_track = extract_coordinate_pairs(leg)
 
     length = None
     _length = leg.find('ns3:Length', namespaces=NS)

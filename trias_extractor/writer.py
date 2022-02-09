@@ -58,8 +58,9 @@ def request_to_cache(r, pipe):
     if r.expected_duration != None:
         pipe.set("{}:expected_duration".format(prefix), r.expected_duration)
     # due to simpler extraction, the locations are stored as list of strings
-    if len(r.via_locations) > 0:
-        pipe.lpush("{}:via_locations".format(prefix), *(r.via_locations))
+    if r.via_locations != None:
+        pipe.set("{}:via_locations".format(prefix),
+            geojson.dumps(geojson.LineString(r.via_locations)))
 
     # Offers
     offer_ids = r.offers.keys()
