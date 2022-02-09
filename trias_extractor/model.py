@@ -23,7 +23,7 @@ class Request:
         self.driving_speed = None
         self.max_transfers = None
         self.expected_duration = None
-        self.via = []
+        self.via_locations = []
 
 
     def add_offer(self, offer):

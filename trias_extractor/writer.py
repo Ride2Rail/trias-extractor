@@ -57,8 +57,9 @@ def request_to_cache(r, pipe):
         pipe.set("{}:max_transfers".format(prefix), r.max_transfers)
     if r.expected_duration != None:
         pipe.set("{}:expected_duration".format(prefix), r.expected_duration)
-    if len(r.via) > 0:
-        pipe.lpush("{}:via".format(prefix), *(r.via))
+    # due to simpler extraction, the locations are stored as list of strings
+    if len(r.via_locations) > 0:
+        pipe.lpush("{}:via_locations".format(prefix), *(r.via_locations))
 
     # Offers
     offer_ids = r.offers.keys()

@@ -100,47 +100,47 @@ def extract_request(parsed_trias, request):
                 if mode == "arrival":
                     request.end_time = datetime
 
-        _r_d_location = _request.find('s2r:DepartureLocation', namespaces=NS)
-        if _r_d_location != None:
-            _r_d_lat = _r_d_location.find('.//s2r:Latitude', namespaces=NS)
-            _r_d_long = _r_d_location.find('.//s2r:Longitude', namespaces=NS)
-            if _r_d_lat != None and _r_d_long != None:
-                request.start_point = (float(_r_d_long.text), float(_r_d_lat.text))
-        _r_a_location = _request.find('s2r:ArrivalLocation', namespaces=NS)
-        if _r_a_location != None:
-            _r_a_lat = _r_a_location.find('.//s2r:Latitude', namespaces=NS)
-            _r_a_long = _r_a_location.find('.//s2r:Longitude', namespaces=NS)
-            if _r_a_lat != None and _r_a_long != None:
-                request.end_point = (float(_r_a_long.text), float(_r_a_lat.text))
+        request.start_point = __extract_lon_lat(_request.find(f's2r:DepartureLocation', namespaces=NS))
+        request.end_point = __extract_lon_lat(_request.find(f's2r:ArrivalLocation', namespaces=NS))
 
-        _r_d_walk_dist_to_stop = _request.find('s2r:WalkingDistanceToStop', namespaces=NS)
-        if _r_d_walk_dist_to_stop != None:
-            request.walking_dist_to_stop = int(_r_d_walk_dist_to_stop.text)
-        _r_d_cycling_dist_to_stop = _request.find('s2r:CyclingDistanceToStop', namespaces=NS)
-        if _r_d_cycling_dist_to_stop != None:
-            request.cycling_dist_to_stop = int(_r_d_cycling_dist_to_stop.text)
+        _r_w_walk_constraints = _request.find('s2r:WalkConstraints', namespaces=NS)
+        if _r_w_walk_constraints != None:
+            _r_w_walk_dist_to_stop = _r_w_walk_constraints.find('s2r:MaxDistance', namespaces=NS)
+            if _r_w_walk_dist_to_stop != None:
+                request.walking_dist_to_stop = int(_r_w_walk_dist_to_stop.text)
+            _r_w_walking_speed = _r_w_walk_constraints.find('s2r:Speed', namespaces=NS)
+            if _r_w_walking_speed != None:
+                request.walking_speed = _r_w_walking_speed.text
 
-        _r_d_walking_speed = _request.find('s2r:WalkingSpeed', namespaces=NS)
-        if _r_d_walking_speed != None:
-            request.walking_speed = _r_d_walking_speed.text
-        _r_d_cycling_speed = _request.find('s2r:CyclingSpeed', namespaces=NS)
-        if _r_d_cycling_speed != None:
-            request.cycling_speed = _r_d_cycling_speed.text
-        _r_d_driving_speed = _request.find('s2r:DrivingSpeed', namespaces=NS)
-        if _r_d_driving_speed != None:
-            request.driving_speed = _r_d_driving_speed.text
+        _r_b_cycling_constraints = _request.find('s2r:BikeConstraints', namespaces=NS)
+        if _r_b_cycling_constraints != None:
+            _r_b_cycling_dist_to_stop = _r_b_cycling_constraints.find('s2r:MaxDistance', namespaces=NS)
+            if _r_b_cycling_dist_to_stop != None:
+                request.cycling_dist_to_stop = int(_r_b_cycling_dist_to_stop.text)
+            _r_b_cycling_speed = _r_b_cycling_constraints.find('s2r:Speed', namespaces=NS)
+            if _r_b_cycling_speed != None:
+                request.cycling_speed = _r_b_cycling_speed.text
+
+        _r_c_car_constraints = _request.find('s2r:CarConstraints', namespaces=NS)
+        if _r_c_car_constraints != None:
+            _r_c_car_speed = _r_c_car_constraints.find('s2r:Speed', namespaces=NS)
+            if _r_c_car_speed != None:
+                request.driving_speed = _r_c_car_speed.text
 
         _r_d_max_transfers = _request.find('s2r:MaxTransfers', namespaces=NS)
         if _r_d_max_transfers != None:
             request.max_transfers = _r_d_max_transfers.text
-        _r_d_expected_duration = _request.find('s2r:ExpectedDuration', namespaces=NS)
+
+        _r_d_expected_duration = _request.find('s2r:MinTransferTime', namespaces=NS)
         if _r_d_expected_duration != None:
             request.expected_duration = _r_d_expected_duration.text
-        _r_a_via = _request.find('s2r:Via', namespaces=NS)
+        _r_a_via = _request.find('s2r:ViaLocation', namespaces=NS)
         if _r_a_via != None:
-            via_points = _r_a_via.findall('.//s2r:ViaPoint', namespaces=NS)
+            via_points = _r_a_via.findall('.//s2r:GeoPosition', namespaces=NS)
             for via_point in via_points:
-                request.via.append(via_point.text)
+                geo_coord = __extract_lon_lat(via_point)
+                if geo_coord != None:
+                    request.via_locations.append(f'{geo_coord[0]},{geo_coord[1]}')
 
     # User info
     _user = parsed_trias.find('.//coactive:User', namespaces=NS)
@@ -151,6 +151,15 @@ def extract_request(parsed_trias, request):
         _traveller_id = _user.find('coactive:Traveller/coactive:UserId', namespaces=NS)
         if _traveller_id != None:
             request.traveller_id = _traveller_id.text
+
+# helper functions
+def __extract_lon_lat(_location):
+    if _location != None:
+        _lat = _location.find('.//s2r:Latitude', namespaces=NS)
+        _lon = _location.find('.//s2r:Longitude', namespaces=NS)
+        if _lat != None and _lon != None:
+            return (float(_lon.text), float(_lat.text))
+    return None
 
 # Add Offer Items to Offers parsing Ticket nodes from TRIAS
 def extract_offer_item(ticket, offers):
