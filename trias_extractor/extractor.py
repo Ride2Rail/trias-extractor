@@ -18,7 +18,7 @@ NS = {'coactive': 'http://shift2rail.org/project/coactive',
       's2r' : 'http://shift2rail.org/project/'}
 
 # Main parsing procedure
-def extract_trias(offers):
+def extract_trias(offers, request_id=None):
     parser = etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
 
     try:
@@ -27,8 +27,9 @@ def extract_trias(offers):
         raise ParsingException('Error parsing the Trias structure.')
     
     # TripRequest
-    # Generate identifier for the request received
-    request_id = str(uuid.uuid4())
+    # if no request id received, generate it
+    if request_id is None:
+        request_id = str(uuid.uuid4())
     request = model.Request(request_id) 
     # Extract mobility request and user info
     extract_request(parsed_trias, request)
@@ -129,11 +130,11 @@ def extract_request(parsed_trias, request):
 
         _r_d_max_transfers = _request.find('s2r:MaxTransfers', namespaces=NS)
         if _r_d_max_transfers != None:
-            request.max_transfers = _r_d_max_transfers.text
+            request.max_transfers = int(_r_d_max_transfers.text)
 
         _r_d_expected_duration = _request.find('s2r:MinTransferTime', namespaces=NS)
         if _r_d_expected_duration != None:
-            request.expected_duration = _r_d_expected_duration.text
+            request.expected_duration = int(_r_d_expected_duration.text)
         # extracts via locations as list of coordinate tuples
         request.via_locations = _request.findall(".//s2r:ViaLocation", namespaces=NS)
         if request.via_locations:

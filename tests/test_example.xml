@@ -9,6 +9,18 @@
       <Longitude>-3.792386</Longitude>
       <Latitude>-3.677984</Latitude>
     </ArrivalLocation>
+    <ViaLocation>
+      <Latitude>38.745818</Latitude>
+      <Longitude>-9.222798</Longitude>
+    </ViaLocation>
+    <ViaLocation>
+      <Latitude>38.746093</Latitude>
+      <Longitude>-9.197911</Longitude>
+    </ViaLocation>
+    <ViaLocation>
+      <Latitude>38.750229</Latitude>
+      <Longitude>-9.174333</Longitude>
+    </ViaLocation>
     <!-- Only one between Departure/Arrival RequestedTravelTime admitted in the XSD -->
     <RequestedTravelTime>
       <RequestMode>departure</RequestMode>
@@ -18,6 +30,19 @@
       <RequestMode>arrival</RequestMode>
       <RequestedTime>2020-11-10T08:00:00.000Z</RequestedTime>
     </RequestedTravelTime>
+    <MaxTransfers>2</MaxTransfers>
+	<MinTransferTime>2</MinTransferTime>
+	<WalkConstraints>
+	  <Speed>slow</Speed>
+      <MaxDistance>10</MaxDistance>
+	</WalkConstraints>
+	<BikeConstraints>
+	  <Speed>medium</Speed>
+      <MaxDistance>5</MaxDistance>
+	</BikeConstraints>
+    <CarConstraints>
+	  <Speed>medium</Speed>
+	</CarConstraints>
   </TripRequest>
   <TripResponse>
     <ns3:Trias xmlns:s2r="http://shift2rail.org/project/" xmlns:coactive="http://shift2rail.org/project/coactive" xmlns:ns2="http://www.siri.org.uk/siri" xmlns:ns3="http://www.vdv.de/trias" xmlns:ns5="http://www.ifopt.org.uk/acsb" xmlns:ns6="http://www.ifopt.org.uk/ifopt" xmlns:ns7="http://datex2.eu/schema/1_0/1_0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">

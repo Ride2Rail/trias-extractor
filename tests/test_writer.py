@@ -30,6 +30,15 @@ def test_request(parsed_request, pipe):
     pipe.set.assert_any_call('{}:start_point'.format(prefix), geojson.dumps(geojson.Point((-3.671161, -3.663255))))
     pipe.set.assert_any_call('{}:end_point'.format(prefix), geojson.dumps(geojson.Point((-3.792386, -3.677984))))
 
+    pipe.set.assert_any_call('{}:cycling_dist_to_stop'.format(prefix), 5)
+    pipe.set.assert_any_call('{}:walking_dist_to_stop'.format(prefix), 10)
+    pipe.set.assert_any_call('{}:walking_speed'.format(prefix), 'slow')
+    pipe.set.assert_any_call('{}:cycling_speed'.format(prefix), 'medium')
+    pipe.set.assert_any_call('{}:driving_speed'.format(prefix), 'medium')
+    pipe.set.assert_any_call('{}:max_transfers'.format(prefix), 2)
+    pipe.set.assert_any_call('{}:expected_duration'.format(prefix), 2)
+    pipe.set.assert_any_call('{}:via_locations'.format(prefix), geojson.dumps(geojson.LineString([(-9.222798, 38.745818),(-9.197911, 38.746093), (-9.174333, 38.750229)])))
+
     pipe.lpush.assert_any_call('{}:offers'.format(prefix), '2a8e0e6c-285d-4c8c-b98f-rs1')
 
 def test_offer(parsed_request, pipe):    

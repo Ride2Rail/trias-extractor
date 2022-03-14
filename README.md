@@ -16,10 +16,11 @@ The procedure implemented by the `trias-extractor` is composed of two main phase
 
 ### Phase I: Parsing   
 
-Parsing of data required from the Trias file provided to an intermediate representation using in-memory objects. The procedures to parse the data are implemented in the ***extractor.py*** module. The intermediate object model used to represent the parsed data is defined in the ***model.py*** module. 
+Parsing of data required from the Trias file provided to an intermediate representation using in-memory objects. The procedures to parse the data are implemented in the ***extractor.py*** module. The intermediate object model used to represent the parsed data is defined in the ***model.py*** module.
 
 The defined model reflects the _offer cache_ schema:
-- **Request**: id, start_time, end_time, start_point, end_point, ***offers*** (dictionary of associated *Offer* objects)
+- **Request**: id, start_time, end_time, start_point, end_point, cycling_dist_to_stop, walking_dist_to_stop,
+  walking_speed, cycling_speed, driving_speed, max_transfers, expected_duration, via_locations, ***offers*** (dictionary of associated *Offer* objects)
 - **Offer**: id, trip, bookable_total, complete_total, ***offer_items***  (dictionary of associated *OfferItem* objects)
 - **Trip**: id, duration, start_time, end_time, num_interchanges, length, **legs** (dictionary of associated *TripLeg* objects)
 - **OfferItem**: id, name, fares_authority_ref, fares_authority_text, price, leg_ids (list of ids of *TripLeg* objects covered by the *OfferItem* object)
@@ -40,7 +41,7 @@ The parsing procedure is implemented through the following steps:
 6.  Parse the `OfferItemContext` for each Trias `Ticket` obtaining a dictionary of key-value pairs bound to specific `model.TripLeg`s associated to the `model.OfferItem`
 
 **Notes**:
-- _Step 1_: a UUID is automatically assigned to each request received by the `trias-extractor` and used as id for the `model.Request` object
+- _Step 1_: if not provided in a parameter, a UUID is automatically assigned to each request received by the `trias-extractor` and used as id for the `model.Request` object
 - _Step 5_: a `model.Offer` can be associated with no `model.OfferItem` if a purchase is not needed to perform the trip
 - _Step 6_: If the `OfferItemContext` contains a composite key, the assumption is that it is composed as `oic_key:leg_id` and the parsed value should be associated only with the `model.TripLeg` having the provided `leg_id`. In all the other cases the value parsed is associated to all the `model.TripLeg`s associated with the `model.OfferItem`. The information extracted from the `OfferItemContext` is merged with the `Attribute`s parsed for each `model.TripLeg`.
 
@@ -57,9 +58,11 @@ Example request running the `trias-extractor` locally.
 $ curl --header 'Content-Type: application/xml' \
        --request POST  \
        --data-binary '@trias/$FILE_NAME' \
-         http://localhost:5000/extract
+         http://localhost:5000/extract/?request_id=example_1_1
 ```
 
+The parameter request_id in the URL, serves for testing purposes to set the request_id to an exact value. 
+If omitted, a random request_id is generated.
 Adding Trias requests to a `trias` folder in the repository root, the `load.sh` script can be used to automatically launch the _trias-extractor_ service, the _offer cache_ and process the files. The _offer cache_ data are persisted in the `./data` folder.
 
 ### Output
@@ -90,7 +93,7 @@ Different alternatives are provided to deploy the `trias-extractor` service.
 
 ### Local development (debug on)
 
-Running it locally (assumption Redis is running at  `localhost:6379 `)
+Running it locally (assumption Redis is running at  `localhost:6379`)
 
 ```bash
 $ python3 trias_extractor_service.py
