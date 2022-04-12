@@ -1,10 +1,10 @@
 # Offer parser `trias-extractor`
 
-**Version:** 1.0 
+**Version:** 1.1 
 
-**Date:** 13.04.2021
+**Date:** 12.04.2022
 
-**Authors:** Mario Scrocca (mario.scrocca@cefriel.com)
+**Authors:** Mario Scrocca ([@marioscrock](https://github.com/marioscrock)), Milan Straka ([@bioticek](https://github.com/bioticek))
 
 ## Description 
 
