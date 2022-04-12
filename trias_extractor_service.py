@@ -73,7 +73,7 @@ def extract():
 if __name__ == '__main__':
     import os
 
-    FLASK_PORT = 5020
+    FLASK_PORT = 5000
     REDIS_HOST = "localhost"
     REDIS_PORT = 6379
     cache = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
