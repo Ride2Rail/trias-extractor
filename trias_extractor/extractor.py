@@ -18,7 +18,7 @@ NS = {'coactive': 'http://shift2rail.org/project/coactive',
       's2r' : 'http://shift2rail.org/project/'}
 
 # Main parsing procedure
-def extract_trias(offers):
+def extract_trias(offers, request_id=None):
     parser = etree.XMLParser(ns_clean=True, recover=True, encoding='utf-8')
 
     try:
@@ -27,8 +27,9 @@ def extract_trias(offers):
         raise ParsingException('Error parsing the Trias structure.')
     
     # TripRequest
-    # Generate identifier for the request received
-    request_id = str(uuid.uuid4())
+    # if no request id received, generate it
+    if request_id is None:
+        request_id = str(uuid.uuid4())
     request = model.Request(request_id) 
     # Extract mobility request and user info
     extract_request(parsed_trias, request)
@@ -100,18 +101,44 @@ def extract_request(parsed_trias, request):
                 if mode == "arrival":
                     request.end_time = datetime
 
-        _r_d_location = _request.find('s2r:DepartureLocation', namespaces=NS)
-        if _r_d_location != None:
-            _r_d_lat = _r_d_location.find('.//s2r:Latitude', namespaces=NS)
-            _r_d_long = _r_d_location.find('.//s2r:Longitude', namespaces=NS)
-            if _r_d_lat != None and _r_d_long != None:
-                request.start_point = (float(_r_d_long.text), float(_r_d_lat.text))
-        _r_a_location = _request.find('s2r:ArrivalLocation', namespaces=NS)
-        if _r_a_location != None:
-            _r_a_lat = _r_a_location.find('.//s2r:Latitude', namespaces=NS)
-            _r_a_long = _r_a_location.find('.//s2r:Longitude', namespaces=NS)
-            if _r_a_lat != None and _r_a_long != None:
-                request.end_point = (float(_r_a_long.text), float(_r_a_lat.text))
+        request.start_point = __extract_lon_lat(_request.find(f's2r:DepartureLocation', namespaces=NS))
+        request.end_point = __extract_lon_lat(_request.find(f's2r:ArrivalLocation', namespaces=NS))
+
+        _r_w_walk_constraints = _request.find('s2r:WalkConstraints', namespaces=NS)
+        if _r_w_walk_constraints != None:
+            _r_w_walk_dist_to_stop = _r_w_walk_constraints.find('s2r:MaxDistance', namespaces=NS)
+            if _r_w_walk_dist_to_stop != None:
+                request.walking_dist_to_stop = int(_r_w_walk_dist_to_stop.text)
+            _r_w_walking_speed = _r_w_walk_constraints.find('s2r:Speed', namespaces=NS)
+            if _r_w_walking_speed != None:
+                request.walking_speed = _r_w_walking_speed.text
+
+        _r_b_cycling_constraints = _request.find('s2r:BikeConstraints', namespaces=NS)
+        if _r_b_cycling_constraints != None:
+            _r_b_cycling_dist_to_stop = _r_b_cycling_constraints.find('s2r:MaxDistance', namespaces=NS)
+            if _r_b_cycling_dist_to_stop != None:
+                request.cycling_dist_to_stop = int(_r_b_cycling_dist_to_stop.text)
+            _r_b_cycling_speed = _r_b_cycling_constraints.find('s2r:Speed', namespaces=NS)
+            if _r_b_cycling_speed != None:
+                request.cycling_speed = _r_b_cycling_speed.text
+
+        _r_c_car_constraints = _request.find('s2r:CarConstraints', namespaces=NS)
+        if _r_c_car_constraints != None:
+            _r_c_car_speed = _r_c_car_constraints.find('s2r:Speed', namespaces=NS)
+            if _r_c_car_speed != None:
+                request.driving_speed = _r_c_car_speed.text
+
+        _r_d_max_transfers = _request.find('s2r:MaxTransfers', namespaces=NS)
+        if _r_d_max_transfers != None:
+            request.max_transfers = int(_r_d_max_transfers.text)
+
+        _r_d_expected_duration = _request.find('s2r:MinTransferTime', namespaces=NS)
+        if _r_d_expected_duration != None:
+            request.expected_duration = int(_r_d_expected_duration.text)
+        # extracts via locations as list of coordinate tuples
+        request.via_locations = _request.findall(".//s2r:ViaLocation", namespaces=NS)
+        if request.via_locations:
+            request.via_locations = coordinates_to_list(request.via_locations, "s2r")
 
     # User info
     _user = parsed_trias.find('.//coactive:User', namespaces=NS)
@@ -122,6 +149,15 @@ def extract_request(parsed_trias, request):
         _traveller_id = _user.find('coactive:Traveller/coactive:UserId', namespaces=NS)
         if _traveller_id != None:
             request.traveller_id = _traveller_id.text
+
+# helper functions
+def __extract_lon_lat(_location):
+    if _location != None:
+        _lat = _location.find('.//s2r:Latitude', namespaces=NS)
+        _lon = _location.find('.//s2r:Longitude', namespaces=NS)
+        if _lat != None and _lon != None:
+            return (float(_lon.text), float(_lat.text))
+    return None
 
 # Add Offer Items to Offers parsing Ticket nodes from TRIAS
 def extract_offer_item(ticket, offers):
@@ -236,7 +272,7 @@ def extract_timed_leg(leg_id, leg, spoints):
     start_time = leg.find('ns3:LegBoard/ns3:ServiceDeparture/ns3:TimetabledTime', namespaces=NS).text
     end_time = leg.find('ns3:LegAlight/ns3:ServiceArrival/ns3:TimetabledTime', namespaces=NS).text
 
-    leg_track = extract_leg_track(leg)
+    leg_track = extract_coordinate_list(leg)
     _length = leg.find('ns3:LegTrack/ns3:TrackSection/ns3:Length', namespaces=NS)
     length = None
     if _length != None:
@@ -272,17 +308,23 @@ def extract_timed_leg(leg_id, leg, spoints):
     return model.TimedLeg(leg_id, start_time, end_time, leg_track, length, leg_stops, 
         transportation_mode, travel_expert, line, journey)
 
-# Extracts the leg track (list of pairs of coordinates) from a Projection node
-def extract_leg_track(leg):
-    _track = leg.find('ns3:LegTrack/ns3:TrackSection/ns3:Projection', namespaces=NS)
-    if _track != None:
-        track = []
-        for pos in list(_track):
-            p_lon = pos.find('ns3:Longitude', namespaces=NS).text
-            p_lat = pos.find('ns3:Latitude', namespaces=NS).text
-            track.append((float(p_lon), float(p_lat)))
-        return track
+
+# Extracts list of pairs of coordinates from a list of positions into a list of lon, lat tuples
+def extract_coordinate_list(element, coord_ns="ns3", xml_element_path='ns3:LegTrack/ns3:TrackSection/ns3:Projection'):
+    _positions = element.find(xml_element_path, namespaces=NS)
+    if _positions:
+        return coordinates_to_list(list(_positions), coord_ns)
     return None
+
+
+# puts coordinates to list
+def coordinates_to_list(position_list, coord_ns):
+    coord_list = []
+    for pos in position_list:
+        p_lon = pos.find(f'{coord_ns}:Longitude', namespaces=NS).text
+        p_lat = pos.find(f'{coord_ns}:Latitude', namespaces=NS).text
+        coord_list.append((float(p_lon), float(p_lat)))
+    return coord_list
 
 # Parses and returns a ContinuousLeg/RideSharingLeg
 def extract_continuous_leg(leg_id, leg, locations):
@@ -290,7 +332,7 @@ def extract_continuous_leg(leg_id, leg, locations):
     end_time = leg.find('ns3:TimeWindowEnd', namespaces=NS).text
     duration = leg.find('ns3:Duration', namespaces=NS).text
 
-    leg_track = extract_leg_track(leg)
+    leg_track = extract_coordinate_list(leg)
 
     length = None
     _length = leg.find('ns3:Length', namespaces=NS)

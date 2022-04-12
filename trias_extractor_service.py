@@ -42,9 +42,13 @@ def check():
 def extract():
     request.get_data()
     offers = request.data
-    
+    args = request.args.to_dict()
+    if not args:
+        request_id = None
+    else:
+        request_id = args["request_id"]
     try:
-        parsed_request = extractor.extract_trias(offers)
+        parsed_request = extractor.extract_trias(offers, request_id)
         logger.info("Offers parsed from Trias [request_id:{}]".format(parsed_request.id))
         num_offers = len(parsed_request.offers.keys())
 

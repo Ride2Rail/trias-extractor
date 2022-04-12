@@ -22,6 +22,17 @@ def test_request(parsed_request):
     assert parsed_request.start_point == (-3.671161, -3.663255)
     assert parsed_request.end_point == (-3.792386, -3.677984)
 
+    assert parsed_request.cycling_dist_to_stop == 5
+    assert parsed_request.walking_dist_to_stop == 10
+    assert parsed_request.walking_speed == 'slow'
+    assert parsed_request.cycling_speed == 'medium'
+    assert parsed_request.driving_speed == 'medium'
+    assert parsed_request.max_transfers == 2
+    assert parsed_request.expected_duration == 2
+    assert parsed_request.via_locations[0] == (-9.222798, 38.745818)
+    assert parsed_request.via_locations[1] == (-9.197911, 38.746093)
+    assert parsed_request.via_locations[2] == (-9.174333, 38.750229)
+
     parsed_offers = parsed_request.offers
     assert len(parsed_offers) == 1
     assert parsed_offers['2a8e0e6c-285d-4c8c-b98f-rs1'] != None
